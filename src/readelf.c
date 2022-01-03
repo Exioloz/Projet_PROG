@@ -1,6 +1,6 @@
-#include "elf_header.h"
-#include "elf_section.h"
 #include "readelf.h"
+#include "elf_header.h"
+#include "elf_shdrs.h"
 
 /*
 big_endian - only for 32 bits
@@ -44,6 +44,7 @@ static bool process_object_file(Filedata * filedata){
         free_filedata(filedata);
         return false;
     }
+    
     // Process Section Headers
     if (!get_section_headers(filedata)){
         fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
