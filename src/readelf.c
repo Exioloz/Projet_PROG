@@ -12,9 +12,9 @@ unsigned big_endian(unsigned char *field, int size){
         case 2:
             return ((unsigned int)field[1] | ((int)field[0]) << 8);
         case 3:
-            return ((u_int32_t)field[2] | ((u_int32_t)field[1]) << 8 | ((u_int32_t)field[0]) << 16);
+            return ((uint32_t)field[2] | ((uint32_t)field[1]) << 8 | ((uint32_t)field[0]) << 16);
         case 4:
-            return ((u_int32_t)field[3] | ((u_int32_t)field[2]) << 8 | ((u_int32_t)field[1]) << 16 | ((u_int32_t)field[0]) << 24);
+            return ((uint32_t)field[3] | ((uint32_t)field[2]) << 8 | ((uint32_t)field[1]) << 16 | ((uint32_t)field[0]) << 24);
         default:
             fprintf(stderr, "Unhandled data length %d\n", size);
             exit(EXIT_FAILURE);

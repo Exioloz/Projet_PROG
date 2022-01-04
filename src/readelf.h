@@ -25,8 +25,8 @@ typedef struct filedata {
     const char *        file_name;
     Elf32_Ehdr          file_header;
     FILE *              file;
-    u_int32_t           file_offset;
-    u_int32_t           file_size;
+    uint32_t           file_offset;
+    uint32_t           file_size;
     Elf_Shdr *          section_headers;
     Elf32_Phdr *        program_headers;
     char *              string_table;
