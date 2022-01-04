@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
         char *p = sign_data;
         int j = 0;
         int c = 0;
-        int addr = shdr[i].sh_offset;
+        int addr = shdr[i].sh_addr;
         printf("0x%08x",addr);
         printf(" ");
         for (j=0; j<shdr[i].sh_size; j++){
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
                     p++;
                 }
                 printf("\n");
-                addr=addr+c;
+                addr=addr+16;
                 printf("0x%08x",addr);
                 printf(" ");
                 c=0;
