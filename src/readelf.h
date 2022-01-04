@@ -4,8 +4,22 @@
 #include <stdlib.h>
 #include <elf.h>
 
-#ifndef _FILEDATA_
-#define _FILEDATA_
+#ifndef _ELF_READ
+#define _ELF_READ
+
+typedef struct elf_shdr {
+  unsigned int	sh_name;		
+  unsigned int	sh_type;		
+  unsigned int	sh_flags;		
+  unsigned int	sh_addr;		
+  unsigned int	sh_offset;		
+  unsigned int	sh_size;		
+  unsigned int	sh_link;		
+  unsigned int	sh_info;		
+  unsigned int	sh_addralign;		
+  unsigned int	sh_entsize;		
+} Elf_Shdr;
+
 /**/
 typedef struct filedata {
     const char *        file_name;
@@ -13,14 +27,15 @@ typedef struct filedata {
     FILE *              file;
     u_int32_t           file_offset;
     u_int32_t           file_size;
-    Elf32_Shdr *        section_headers;
+    Elf_Shdr *          section_headers;
     Elf32_Phdr *        program_headers;
     char *              string_table;
+    int                 string_table_length;
 } Filedata;
+
+#endif
 
 /*
 big_endian - only for 32 bits
 */
 unsigned big_endian(unsigned char *field, int size);
-
-#endif
