@@ -109,7 +109,9 @@ char * get_section_type(Filedata * filedata, int sh_type){
     return "<error>";
 }
 
-
+/*
+Get Name of Section Header
+*/
 char * get_section_name(Filedata *filedata, Elf_Shdr *hdr){
   if (hdr == NULL)
     return ("<none>");
@@ -120,6 +122,9 @@ char * get_section_name(Filedata *filedata, Elf_Shdr *hdr){
   return filedata->string_table + hdr->sh_name;
 }
 
+/*
+Print Name of Section Header with correct formatting
+*/
 void section_name(int width, char * symbol){
     unsigned int remaining_width;
     if (width == 0)
@@ -139,6 +144,10 @@ void section_name(int width, char * symbol){
     }
 }
 
+/*
+Process Section Headers
+    Prints Data of section headers and key for flags
+*/
 bool process_section_headers (Filedata * filedata){
     Elf_Shdr * section;
     // Verify if error with section headers
