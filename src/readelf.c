@@ -34,20 +34,19 @@ Process Object File - verifies that the file is in the correct
 format of an objects file
 */
 static bool process_object_file(Filedata * filedata){
-    // Process File Header
     if (!get_file_header(filedata)){
         fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
         free_filedata(filedata);
         return false;
     }
-    if (!process_file_header(filedata)){
+
+    if (!get_section_headers(filedata)){
+        fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
         free_filedata(filedata);
         return false;
     }
-    
-    // Process Section Headers
-    if (!get_section_headers(filedata)){
-        fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
+
+    if (!process_file_header(filedata)){
         free_filedata(filedata);
         return false;
     }
@@ -55,7 +54,6 @@ static bool process_object_file(Filedata * filedata){
         free_filedata(filedata);
         return false;
     }
-
 
     return true;
 }
