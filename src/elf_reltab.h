@@ -6,5 +6,6 @@
 
 bool get_rel_table(Filedata *filedata);
 
+bool process_rel_table(Filedata *filedata);
 
 #endif
