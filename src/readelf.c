@@ -2,6 +2,8 @@
 #include "elf_header.h"
 #include "elf_shdrs.h"
 #include "elf_reltab.h"
+#include "read_section.h"
+#include "elf_symbol.h"
 
 /*
 Free Filedata (to not have repetitive code)
@@ -65,6 +67,16 @@ static bool process_object_file(Filedata * filedata){
         return false;
     }
 
+    char * temp = ".symtab";
+    if (!read_section(filedata, temp)){
+        free_filedata(filedata);
+        return false;
+    }
+
+    if (!process_symbol_table(filedata)){
+            free_filedata(filedata);
+            return false;
+        }
     return true;
 }
 
@@ -104,8 +116,14 @@ static bool process_file(char *file_name){
 // To be changed if we want to read multiple files at once
 int main(int argc, char ** argv){
     bool error = false;
-    printf("%s\n", argv[1]);
-    if (! process_file(argv[1]))
+    // process file : option "-a"
+    // process header : option "-h"
+    // process section headers : option "-S"
+    // process relocations : option "-r"
+
+
+    printf("%s\n", argv[argc-1]);
+    if (! process_file(argv[argc-1]))
         error = true;
     return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
