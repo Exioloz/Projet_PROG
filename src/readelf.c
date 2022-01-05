@@ -4,6 +4,15 @@
 #include "elf_reltab.h"
 
 /*
+Free Filedata (to not have repetitive code)
+*/
+void free_filedata(Filedata * filedata){
+    free(filedata->program_headers);
+    free(filedata->section_headers);
+    free(filedata);
+}
+
+/*
 big_endian - only for 32 bits
 */
 unsigned big_endian(unsigned char *field, int size){

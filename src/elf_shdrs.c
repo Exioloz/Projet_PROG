@@ -49,14 +49,14 @@ bool get_section_headers(Filedata *filedata){
     Elf32_External_Shdr * shdrs = (Elf32_External_Shdr *) get_section(NULL, filedata, filedata->file_header.e_shoff, size, num);
     if (shdrs == NULL)
         return false;
-    filedata->section_headers = (Elf_Shdr *) malloc(sizeof(Elf_Shdr)*num);
+    filedata->section_headers = (Elf32_Shdr *) malloc(sizeof(Elf32_Shdr)*num);
     if (filedata->section_headers == NULL){
         fprintf(stderr, "Out of memory reading section headers\n");
         free (shdrs);
         return false;
     }
 
-    Elf_Shdr * internal;
+    Elf32_Shdr * internal;
     int i;
     for (i = 0, internal = filedata->section_headers; i < num; i++, internal++){
         internal->sh_name      = big_endian(shdrs[i].sh_name, sizeof(shdrs[i].sh_name));
@@ -112,7 +112,7 @@ char * get_section_type(Filedata * filedata, int sh_type){
 /*
 Get Name of Section Header
 */
-char * get_section_name(Filedata *filedata, Elf_Shdr *hdr){
+char * get_section_name(Filedata *filedata, Elf32_Shdr *hdr){
   if (hdr == NULL)
     return ("<none>");
   if (filedata->string_table == NULL)
@@ -145,11 +145,42 @@ void section_name(int width, char * symbol){
 }
 
 /*
+Get Section Flags
+*/
+char * get_section_flags(Filedata * filedata, unsigned int flags){
+    static char buff[1024];
+    char *temp = buff;
+    while (flags){
+        unsigned int flag;
+        flag = flags & - flags;
+        flags &= ~ flag;
+        switch(flag){
+            case SHF_WRITE:		        *temp = 'W'; break;
+            case SHF_ALLOC:		        *temp = 'A'; break;
+            case SHF_EXECINSTR:		    *temp = 'X'; break;
+            case SHF_MERGE:		        *temp = 'M'; break;
+            case SHF_STRINGS:		    *temp = 'S'; break;
+            case SHF_INFO_LINK:		    *temp = 'I'; break;
+            case SHF_LINK_ORDER:	    *temp = 'L'; break;
+            case SHF_OS_NONCONFORMING:	*temp = 'O'; break;
+            case SHF_GROUP:		        *temp = 'G'; break;
+            case SHF_TLS:		        *temp = 'T'; break;
+            case SHF_EXCLUDE:		    *temp = 'E'; break;
+            case SHF_COMPRESSED:	    *temp = 'C'; break;
+            default:                    *temp = '-'; break; // TO BE CONTINUED
+        }
+        temp++;
+    }
+    *temp = '\0';
+    return buff;
+}
+
+/*
 Process Section Headers
     Prints Data of section headers and key for flags
 */
 bool process_section_headers (Filedata * filedata){
-    Elf_Shdr * section;
+    Elf32_Shdr * section;
     // Verify if error with section headers
     if (filedata->file_header.e_shnum == 0){
         if (filedata->file_header.e_shoff != 0){
@@ -184,7 +215,7 @@ bool process_section_headers (Filedata * filedata){
         printf(" %-15.15s ", get_section_type(filedata, section->sh_type));
         printf("%8.8x" , section->sh_addr);
 	    printf( " %6.6lx %6.6lx %2.2lx", (unsigned long) section->sh_offset, (unsigned long) section->sh_size, (unsigned long) section->sh_entsize);
-        printf(" TODO");
+        printf(" %3s ", get_section_flags(filedata, section->sh_flags));
         printf("%2u %3u %2lu\n", section->sh_link, section->sh_info, (unsigned long) section->sh_addralign);
 
     }
