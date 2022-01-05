@@ -59,19 +59,197 @@ Get Machine Name
 */
 char * get_machine_name(unsigned e_machine){
     switch (e_machine){
-        case ET_NONE:        return ("No Machine");
-        case EM_M32:         return ("AT&T WE 32100");
-        case EM_SPARC:       return ("SPARC");
-        case EM_386:         return ("Intel Architecture");
-        case EM_68K:         return ("Motorola 68000");
-        case EM_88K:         return ("Motorola 88000");
-        case EM_860:         return ("Intel 80860");
-        case EM_MIPS:        return ("MIPS RS3000 Big-Endian");
-        case EM_MIPS_RS4_BE: return ("MIPS RS4000 Big-Endian");
-        default: 
-            if (e_machine != 9)
-                return ("Reserved for future use");
-            return ("Not Specified in Elf.pdf"); // e_machine == 9
+        case EM_NONE: return("No machine"); break;
+        case EM_M32: return("AT&T WE 32100"); break;
+        case EM_SPARC: return("SUN SPARC"); break;
+        case EM_386: return("Intel 80386"); break;
+        case EM_68K: return("Motorola m68k family"); break;
+        case EM_88K: return("Motorola m88k family"); break;
+        case EM_IAMCU: return("Intel MCU"); break;
+        case EM_860: return("Intel 80860"); break;
+        case EM_MIPS: return("MIPS R3000 big-endian"); break;
+        case EM_S370: return("IBM System/370"); break;
+        case EM_MIPS_RS3_LE: return("MIPS R3000 little-endian"); break;
+                        /* reserved 11-14 */
+        case EM_PARISC: return("HPPA"); break;
+                        /* reserved 16 */
+        case EM_VPP500: return("Fujitsu VPP500"); break;
+        case EM_SPARC32PLUS: return("Sun's \"v8plus\""); break;
+        case EM_960: return("Intel 80960"); break;
+        case EM_PPC: return("PowerPC"); break;
+        case EM_PPC64: return("PowerPC 64-bit"); break;
+        case EM_S390: return("IBM S390"); break;
+        case EM_SPU: return("IBM SPU/SPC"); break;
+                        /* reserved 24-35 */
+        case EM_V800: return("NEC V800 series"); break;
+        case EM_FR20: return("Fujitsu FR20"); break;
+        case EM_RH32: return("TRW RH-32"); break;
+        case EM_RCE: return("Motorola RCE"); break;
+        case EM_ARM: return("ARM"); break;
+        case EM_FAKE_ALPHA: return("Digital Alpha"); break;
+        case EM_SH: return("Hitachi SH"); break;
+        case EM_SPARCV9: return("SPARC v9 64-bit"); break;
+        case EM_TRICORE: return("Siemens Tricore"); break;
+        case EM_ARC: return("Argonaut RISC Core"); break;
+        case EM_H8_300: return("Hitachi H8/300"); break;
+        case EM_H8_300H: return("Hitachi H8/300H"); break;
+        case EM_H8S: return("Hitachi H8S"); break;
+        case EM_H8_500: return("Hitachi H8/500"); break;
+        case EM_IA_64: return("Intel Merced"); break;
+        case EM_MIPS_X: return("Stanford MIPS-X"); break;
+        case EM_COLDFIRE: return("Motorola Coldfire"); break;
+        case EM_68HC12: return("Motorola M68HC12"); break;
+        case EM_MMA: return("Fujitsu MMA Multimedia Accelerator"); break;
+        case EM_PCP: return("Siemens PCP"); break;
+        case EM_NCPU: return("Sony nCPU embeeded RISC"); break;
+        case EM_NDR1: return("Denso NDR1 microprocessor"); break;
+        case EM_STARCORE: return("Motorola Start*Core processor"); break;
+        case EM_ME16: return("Toyota ME16 processor"); break;
+        case EM_ST100: return("STMicroelectronic ST100 processor"); break;
+        case EM_TINYJ: return("Advanced Logic Corp. Tinyj emb.fam"); break;
+        case EM_X86_64: return("AMD x86-64 architecture"); break;
+        case EM_PDSP: return("Sony DSP Processor"); break;
+        case EM_PDP10: return("Digital PDP-10"); break;
+        case EM_PDP11: return("Digital PDP-11"); break;
+        case EM_FX66: return("Siemens FX66 microcontroller"); break;
+        case EM_ST9PLUS: return("STMicroelectronics ST9+ 8/16 mc"); break;
+        case EM_ST7: return("STmicroelectronics ST7 8 bit mc"); break;
+        case EM_68HC16: return("Motorola MC68HC16 microcontroller"); break;
+        case EM_68HC11: return("Motorola MC68HC11 microcontroller"); break;
+        case EM_68HC08: return("Motorola MC68HC08 microcontroller"); break;
+        case EM_68HC05: return("Motorola MC68HC05 microcontroller"); break;
+        case EM_SVX: return("Silicon Graphics SVx"); break;
+        case EM_ST19: return("STMicroelectronics ST19 8 bit mc"); break;
+        case EM_VAX: return("Digital VAX"); break;
+        case EM_CRIS: return("Axis Communications 32-bit emb.proc"); break;
+        case EM_JAVELIN: return("Infineon Technologies 32-bit emb.proc"); break;
+        case EM_FIREPATH: return("Element 14 64-bit DSP Processor"); break;
+        case EM_ZSP: return("LSI Logic 16-bit DSP Processor"); break;
+        case EM_MMIX: return("Donald Knuth's educational 64-bit proc"); break;
+        case EM_HUANY: return("Harvard University machine-independent object files"); break;
+        case EM_PRISM: return("SiTera Prism"); break;
+        case EM_AVR: return("Atmel AVR 8-bit microcontroller"); break;
+        case EM_FR30: return("Fujitsu FR30"); break;
+        case EM_D10V: return("Mitsubishi D10V"); break;
+        case EM_D30V: return("Mitsubishi D30V"); break;
+        case EM_V850: return("NEC v850"); break;
+        case EM_M32R: return("Mitsubishi M32R"); break;
+        case EM_MN10300: return("Matsushita MN10300"); break;
+        case EM_MN10200: return("Matsushita MN10200"); break;
+        case EM_PJ: return("picoJava"); break;
+        case EM_OPENRISC: return("OpenRISC 32-bit embedded processor"); break;
+        case EM_ARC_COMPACT: return("ARC International ARCompact"); break;
+        case EM_XTENSA: return("Tensilica Xtensa Architecture"); break;
+        case EM_VIDEOCORE: return("Alphamosaic VideoCore"); break;
+        case EM_TMM_GPP: return("Thompson Multimedia General Purpose Proc"); break;
+        case EM_NS32K: return("National Semi. 32000"); break;
+        case EM_TPC: return("Tenor Network TPC"); break;
+        case EM_SNP1K: return("Trebia SNP 1000"); break;
+        case EM_ST200: return("STMicroelectronics ST200"); break;
+        case EM_IP2K: return("Ubicom IP2xxx"); break;
+        case EM_MAX: return("MAX processor"); break;
+        case EM_CR: return("National Semi. CompactRISC"); break;
+        case EM_F2MC16: return("Fujitsu F2MC16"); break;
+        case EM_MSP430: return("Texas Instruments msp430"); break;
+        case EM_BLACKFIN: return("Analog Devices Blackfin DSP"); break;
+        case EM_SE_C33: return("Seiko Epson S1C33 family"); break;
+        case EM_SEP: return("Sharp embedded microprocessor"); break;
+        case EM_ARCA: return("Arca RISC"); break;
+        case EM_UNICORE: return("PKU-Unity & MPRC Peking Uni. mc series"); break;
+        case EM_EXCESS: return("eXcess configurable cpu"); break;
+        case EM_DXP: return("Icera Semi. Deep Execution Processor"); break;
+        case EM_ALTERA_NIOS2: return("Altera Nios II"); break;
+        case EM_CRX: return("National Semi. CompactRISC CRX"); break;
+        case EM_XGATE: return("Motorola XGATE"); break;
+        case EM_C166: return("Infineon C16x/XC16x"); break;
+        case EM_M16C: return("Renesas M16C"); break;
+        case EM_DSPIC30F: return("Microchip Technology dsPIC30F"); break;
+        case EM_CE: return("Freescale Communication Engine RISC"); break;
+        case EM_M32C: return("Renesas M32C"); break;
+                        /* reserved 121-130 */
+        case EM_TSK3000: return("Altium TSK3000"); break;
+        case EM_RS08: return("Freescale RS08"); break;
+        case EM_SHARC: return("Analog Devices SHARC family"); break;
+        case EM_ECOG2: return("Cyan Technology eCOG2"); break;
+        case EM_SCORE7: return("Sunplus S+core7 RISC"); break;
+        case EM_DSP24: return("New Japan Radio (NJR) 24-bit DSP"); break;
+        case EM_VIDEOCORE3: return("Broadcom VideoCore III"); break;
+        case EM_LATTICEMICO32: return("RISC for Lattice FPGA"); break;
+        case EM_SE_C17: return("Seiko Epson C17"); break;
+        case EM_TI_C6000: return("Texas Instruments TMS320C6000 DSP"); break;
+        case EM_TI_C2000: return("Texas Instruments TMS320C2000 DSP"); break;
+        case EM_TI_C5500: return("Texas Instruments TMS320C55x DSP"); break;
+        case EM_TI_ARP32: return("Texas Instruments App. Specific RISC"); break;
+        case EM_TI_PRU: return("Texas Instruments Prog. Realtime Unit"); break;
+                        /* reserved 145-159 */
+        case EM_MMDSP_PLUS: return("STMicroelectronics 64bit VLIW DSP"); break;
+        case EM_CYPRESS_M8C: return("Cypress M8C"); break;
+        case EM_R32C: return("Renesas R32C"); break;
+        case EM_TRIMEDIA: return("NXP Semi. TriMedia"); break;
+        case EM_QDSP6: return("QUALCOMM DSP6"); break;
+        case EM_8051: return("Intel 8051 and variants"); break;
+        case EM_STXP7X: return("STMicroelectronics STxP7x"); break;
+        case EM_NDS32: return("Andes Tech. compact code emb. RISC"); break;
+        case EM_ECOG1X: return("Cyan Technology eCOG1X"); break;
+        case EM_MAXQ30: return("Dallas Semi. MAXQ30 mc"); break;
+        case EM_XIMO16: return("New Japan Radio (NJR) 16-bit DSP"); break;
+        case EM_MANIK: return("M2000 Reconfigurable RISC"); break;
+        case EM_CRAYNV2: return("Cray NV2 vector architecture"); break;
+        case EM_RX: return("Renesas RX"); break;
+        case EM_METAG: return("Imagination Tech. META"); break;
+        case EM_MCST_ELBRUS: return("MCST Elbrus"); break;
+        case EM_ECOG16: return("Cyan Technology eCOG16"); break;
+        case EM_CR16: return("National Semi. CompactRISC CR16"); break;
+        case EM_ETPU: return("Freescale Extended Time Processing Unit"); break;
+        case EM_SLE9X: return("Infineon Tech. SLE9X"); break;
+        case EM_L10M: return("Intel L10M"); break;
+        case EM_K10M: return("Intel K10M"); break;
+                        /* reserved 182 */
+        case EM_AARCH64: return("ARM AARCH64"); break;
+                        /* reserved 184 */
+        case EM_AVR32: return("Amtel 32-bit microprocessor"); break;
+        case EM_STM8: return("STMicroelectronics STM8"); break;
+        case EM_TILE64: return("Tileta TILE64"); break;
+        case EM_TILEPRO: return("Tilera TILEPro"); break;
+        case EM_MICROBLAZE: return("Xilinx MicroBlaze"); break;
+        case EM_CUDA: return("NVIDIA CUDA"); break;
+        case EM_TILEGX: return("Tilera TILE-Gx"); break;
+        case EM_CLOUDSHIELD: return("CloudShield"); break;
+        case EM_COREA_1ST: return("KIPO-KAIST Core-A 1st gen."); break;
+        case EM_COREA_2ND: return("KIPO-KAIST Core-A 2nd gen."); break;
+        case EM_ARC_COMPACT2: return("Synopsys ARCompact V2"); break;
+        case EM_OPEN8: return("Open8 RISC"); break;
+        case EM_RL78: return("Renesas RL78"); break;
+        case EM_VIDEOCORE5: return("Broadcom VideoCore V"); break;
+        case EM_78KOR: return("Renesas 78KOR"); break;
+        case EM_56800EX: return("Freescale 56800EX DSC"); break;
+        case EM_BA1: return("Beyond BA1"); break;
+        case EM_BA2: return("Beyond BA2"); break;
+        case EM_XCORE: return("XMOS xCORE"); break;
+        case EM_MCHP_PIC: return("Microchip 8-bit PIC(r)"); break;
+                        /* reserved 205-209 */
+        case EM_KM32: return("KM211 KM32"); break;
+        case EM_KMX32: return("KM211 KMX32"); break;
+        case EM_EMX16: return("KM211 KMX16"); break;
+        case EM_EMX8: return("KM211 KMX8"); break;
+        case EM_KVARC: return("KM211 KVARC"); break;
+        case EM_CDP: return("Paneve CDP"); break;
+        case EM_COGE: return("Cognitive Smart Memory Processor"); break;
+        case EM_COOL: return("Bluechip CoolEngine"); break;
+        case EM_NORC: return("Nanoradio Optimized RISC"); break;
+        case EM_CSR_KALIMBA: return("CSR Kalimba"); break;
+        case EM_Z80: return("Zilog Z80"); break;
+        case EM_VISIUM: return("Controls and Data Services VISIUMcore"); break;
+        case EM_FT32: return("FTDI Chip FT32"); break;
+        case EM_MOXIE: return("Moxie processor"); break;
+        case EM_AMDGPU: return("AMD GPU"); break;
+                        /* reserved 225-242 */
+        case EM_RISCV: return("RISC-V"); break;
+
+        case EM_BPF: return("Linux BPF -- in-kernel virtual machine"); break;
+        case EM_CSKY: return("C-SKY"); break;
+        default:
+            return("Reserved for future use"); break;
     }
 }
 
