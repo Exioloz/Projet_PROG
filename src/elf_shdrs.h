@@ -31,7 +31,7 @@ bool get_section_headers(Filedata *filedata);
 
 char * get_section_type(Filedata * filedata, int sh_type);
 
-char * get_section_name(Filedata *filedata, Elf32_Shdr *hdr);
+char * get_section_name(Filedata *filedata, Elf32_Word sh_name);
 
 void section_name(int width, char * symbol);
 
