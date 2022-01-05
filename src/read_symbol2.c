@@ -10,24 +10,19 @@
 #include "elf_shdrs.h"
 #include <ctype.h>
 
-void read_symbol_table(char filename, Filedata * filedata);
+void read_symbol_table(Filedata * filedata);
 
-void read_symbol_table(char filename, Filedata * filedata) {
+void read_symbol_table(Filedata * filedata) {
 
-    FILE *fp;
-    fp = fopen(argv[1], "r");
-    if (NULL == fp){
-        printf("fail to open the file");
-        exit(0);
-    }
+    rewind(filedata->file);
 
-
+    fseek(filedata->file, filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset, SEEK_SET);
     // 第e_shstrndx项?~X??~W符串表 ?~Z?~I ?~W?~J~B ?~U?度 char类?~^~K ?~U??~D
     char shstrtab[filedata->section_headers[filedata->file_header.e_shstrndx].sh_size];
     char *temp = shstrtab;
 
     // 读?~O~V?~F~E容
-    a = fread(shstrtab, shdr[elf_head.e_shstrndx].sh_size, 1, fp);
+    a = fread(shstrtab, shdr[elf_head.e_shstrndx].sh_size, 1, filedata->file);
     if (0 == a){
         printf("\nfail to read\n");
     }
@@ -57,9 +52,9 @@ void read_symbol_table(char filename, Filedata * filedata) {
         int number_sym = filedata->section_headers[i].sh_size / filedata->section_headers[i].sh_entsize;
         printf("La table de symboles << .symtab >> contient %d entrees :\n", number_sym);
         Elf32_Sym *symtable=(Elf32_Sym*)malloc(sizeof(Elf32_Sym) * number_dy);
-        fseek(fp, shdr[i].sh_offset, SEEK_SET); //?~I??~H?表?~Z~D?~M置
-        printf("Size:%d\n",shdr[i].sh_size);
-        fread(symtable, sizeof(Elf32_Sym)*number_sym, 1, fp);
+        fseek(filedata->file, filedata->section_headers[i].sh_offset, SEEK_SET); //?~I??~H?表?~Z~D?~M置
+        printf("Size:%d\n",filedata->section_headers[i].sh_size);
+        fread(symtable, sizeof(Elf32_Sym)*number_sym, 1, filedata->file);
         printf(" Num:\tValeur\t\t\tTail\tType\tLien\t\tVis\t\tNdx\tNom\n");
         for (int j=0; j<number_sym; j++) {
             temp=shstrtab;

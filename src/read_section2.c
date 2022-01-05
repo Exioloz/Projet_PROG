@@ -10,20 +10,17 @@
 #include "elf_shdrs.h"
 #include <ctype.h>
 
-void read_section(char filename, Filedata * filedata, char section_name);
+void read_section(Filedata * filedata, char section_name);
 
-void read_section(char filename, Filedata * filedata, char section_name) {
+void read_section(Filedata * filedata, char section_name) {
 
-    FILE *fp;
-    fp = fopen(filename, "r");
-    if (NULL == fp){
-        printf("fail to open the file");
-        exit(0);
-    }
+    rewind(filedata->file);
+
+    fseek(filedata->file, filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset, SEEK_SET);
 
     char shstrtab[filedata->section_headers[filedata->file_header.e_shstrndx].sh_size];
     char *temp = shstrtab;
-    a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, fp);
+    a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, filedata->file);
     if (0 == a){
         printf("\nfail to read\n");
     }
@@ -38,8 +35,8 @@ void read_section(char filename, Filedata * filedata, char section_name) {
         printf("Offset: %x\n", filedata->section_headers[i].sh_offset);
         printf("La taille: %x\n", filedata->section_headers[i].sh_size);
         char  *sign_data=(char*)malloc(sizeof(char)*filedata->section_headers[i].sh_size);
-        fseek(fp, filedata->section_headers[i].sh_offset, SEEK_SET);
-        fread(sign_data, sizeof(char)*(filedata->section_headers[i].sh_size), 1, fp);
+        fseek(filedata->file, filedata->section_headers[i].sh_offset, SEEK_SET);
+        fread(sign_data, sizeof(char)*(filedata->section_headers[i].sh_size), 1, filedata->file);
         char *p = sign_data;
         int j = 0;
         int c = 0;
