@@ -1,16 +1,4 @@
-#include <stdio.h>
-#include <memory.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
-#include "elf_header.h"
-#include "readelf.h"
-#include <elf.h>
-#include "elf_shdrs.h"
-#include <ctype.h>
-
-void read_symbol_table(Filedata * filedata);
+#include "read_symbol.h"
 
 void read_symbol_table(Filedata * filedata) {
 
@@ -22,27 +10,26 @@ void read_symbol_table(Filedata * filedata) {
     char *temp = shstrtab;
 
     // 读?~O~V?~F~E容
-    a = fread(shstrtab, shdr[elf_head.e_shstrndx].sh_size, 1, filedata->file);
+    size_t a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, filedata->file);
     if (0 == a){
         printf("\nfail to read\n");
     }
-//    int index_strtab;
-//    for (int i=0; i < filedata->file_header.e_shnum; i++){
-//        temp=shstrtab;
-//        temp=temp+filedata->section_headers[i].sh_name;
-//        if(strcmp(temp, ".strtab")!=0) continue;
-//        index_strtab=i;
-//    }
-//    rewind(fp);
-//    fseek(fp, filedata->section_headers[index_strtab].sh_offset, SEEK_SET);
-//    char strtab[filedata->section_headers[index_strtab].sh_size];
-//    char *strtemp=strtab;
-//    a = fread(strtab, filedata->section_headers[index_strtab].sh_size, 1, fp);
-//    if (0 == a) {
-//        printf("\nfail to read\n");
-//    }
-    char *strtemp=filedata->string_table;
-
+    int index_strtab = 0;
+    for (int i=0; i < filedata->file_header.e_shnum; i++){
+        temp=shstrtab;
+        temp=temp+filedata->section_headers[i].sh_name;
+        if(strcmp(temp, ".strtab")!=0) continue;
+        index_strtab=i;
+    }
+    printf("%d\n", index_strtab);
+    rewind(filedata->file);
+    fseek(filedata->file, filedata->section_headers[index_strtab].sh_offset, SEEK_SET);
+    char strtab[filedata->section_headers[index_strtab].sh_size];
+    a = fread(strtab, filedata->section_headers[index_strtab].sh_size, 1, filedata->file);
+    if (0 == a) {
+        printf("\nfail to read\n");
+    }
+    char *strtemp=strtab;
     // ?~A~M?~N~F
 
     for (int i = 0; i < filedata->file_header.e_shnum; i++){
@@ -51,15 +38,24 @@ void read_symbol_table(Filedata * filedata) {
         if (strcmp(temp, ".symtab") != 0) continue;
         int number_sym = filedata->section_headers[i].sh_size / filedata->section_headers[i].sh_entsize;
         printf("La table de symboles << .symtab >> contient %d entrees :\n", number_sym);
-        Elf32_Sym *symtable=(Elf32_Sym*)malloc(sizeof(Elf32_Sym) * number_dy);
+        Elf32_Sym *symtable=(Elf32_Sym*)malloc(sizeof(Elf32_Sym) * number_sym);
+        if (symtable == NULL){
+            fprintf(stderr, "Not able to allocate memory for symtable %i", i);
+        }
+
+
         fseek(filedata->file, filedata->section_headers[i].sh_offset, SEEK_SET); //?~I??~H?表?~Z~D?~M置
         printf("Size:%d\n",filedata->section_headers[i].sh_size);
-        fread(symtable, sizeof(Elf32_Sym)*number_sym, 1, filedata->file);
-        printf(" Num:\tValeur\t\t\tTail\tType\tLien\t\tVis\t\tNdx\tNom\n");
+        
+        if (fread(symtable, sizeof(Elf32_Sym)*number_sym, 1, filedata->file)){
+            fprintf(stderr, "Unable to read file\n");
+        }
+
+        printf("   Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
         for (int j=0; j<number_sym; j++) {
             temp=shstrtab;
-            printf(" %d\t", j);
-            printf("%016x\t", symtable[j].st_value);
+            printf("     %d ", j);
+            printf("%08x\t", symtable[j].st_value);
             printf("%d\t", symtable[j].st_size);
             switch (ELF32_ST_TYPE(symtable[j].st_info)) {
                 case 0:
@@ -124,11 +120,11 @@ void read_symbol_table(Filedata * filedata) {
                     break;
 
             }
-            strtemp=filedata->string_table;;
+            strtemp=strtab;
             strtemp=strtemp+symtable[j].st_name;
-            printf(" %s\n", strtemp);
+            printf("NAME: %s\n", strtemp);
         }
 
     }
-    return 0;
+    return;
 }
