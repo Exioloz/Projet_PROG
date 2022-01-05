@@ -112,14 +112,12 @@ char * get_section_type(Filedata * filedata, int sh_type){
 /*
 Get Name of Section Header
 */
-char * get_section_name(Filedata *filedata, Elf32_Shdr *hdr){
-  if (hdr == NULL)
-    return ("<none>");
+char * get_section_name(Filedata *filedata, Elf32_Word sh_name){
   if (filedata->string_table == NULL)
     return ("<no-strings>");
-  if (hdr->sh_name >= filedata->string_table_length)
+  if (sh_name >= filedata->string_table_length)
     return ("<corrupt>");
-  return filedata->string_table + hdr->sh_name;
+  return filedata->string_table + sh_name;
 }
 
 /*
