@@ -209,7 +209,7 @@ bool process_section_headers (Filedata * filedata){
     int i;
     for (i = 0, section = filedata->section_headers; i < filedata->file_header.e_shnum; i++, section++){
         printf("  [%2u] ", i);
-        section_name(17, get_section_name(filedata, section));
+        section_name(17, get_section_name(filedata, section->sh_name));
         printf(" %-15.15s ", get_section_type(filedata, section->sh_type));
         printf("%8.8x" , section->sh_addr);
 	    printf( " %6.6lx %6.6lx %2.2lx", (unsigned long) section->sh_offset, (unsigned long) section->sh_size, (unsigned long) section->sh_entsize);
