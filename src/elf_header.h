@@ -5,6 +5,11 @@
 
 #define EM_MIPS_RS4_BE  10
 
+/*================================================================
+    Get Values of File Section Headers from File
+  ================================================================*/
+
+// Used to obtain File Header from file
 typedef struct elf32_header{
     unsigned char       e_ident[EI_NIDENT];
     unsigned char       e_type[2];                    
@@ -21,11 +26,6 @@ typedef struct elf32_header{
     unsigned char       e_shnum[2];              
     unsigned char       e_shstrndx[2];             
 } Elf32_Head;
-
-/*
-Free Filedata (to not have repetitive code)
-*/
-void free_filedata(Filedata * filedata);
 
 /*
 Get Elf Class
@@ -52,6 +52,10 @@ Get File Header
 
 */
 bool get_file_header(Filedata *filedata);
+
+/*================================================================
+    Process File Header from Obtained Data
+  ================================================================*/
 
 /*
 Process File Header

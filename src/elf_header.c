@@ -1,14 +1,5 @@
 #include "elf_header.h"
 
-/*
-Free Filedata (to not have repetitive code)
-*/
-void free_filedata(Filedata * filedata){
-    free(filedata->program_headers);
-    free(filedata->section_headers);
-    free(filedata);
-}
-
 /*================================================================
     Get Values of File Header from File
   ================================================================*/
@@ -68,6 +59,7 @@ char * get_machine_name(unsigned e_machine){
         case EM_860:         return ("Intel 80860");
         case EM_MIPS:        return ("MIPS RS3000 Big-Endian");
         case EM_MIPS_RS4_BE: return ("MIPS RS4000 Big-Endian");
+        case EM_ARM:         return ("ARM");
         default: 
             if (e_machine != 9)
                 return ("Reserved for future use");

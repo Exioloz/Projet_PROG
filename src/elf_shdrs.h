@@ -7,6 +7,7 @@
     Get Values of File Section Headers from File
   ================================================================*/
 
+// Used to obtain Sections' Header from file
 typedef struct {
   unsigned char	sh_name[4];		
   unsigned char	sh_type[4];		
@@ -30,11 +31,13 @@ bool get_section_headers(Filedata *filedata);
 
 char * get_section_type(Filedata * filedata, int sh_type);
 
-char * get_section_name(Filedata *filedata, Elf_Shdr *hdr);
+char * get_section_name(Filedata *filedata, Elf32_Shdr *hdr);
 
 void section_name(int width, char * symbol);
 
 char * get_section_type(Filedata * filedata, int sh_type);
+
+char * get_section_flags(Filedata * filedata, unsigned int flags);
 
 bool process_section_headers (Filedata * filedata);
 
