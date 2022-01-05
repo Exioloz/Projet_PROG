@@ -31,21 +31,22 @@ void read_symbol_table(char filename, Filedata * filedata) {
     if (0 == a){
         printf("\nfail to read\n");
     }
-    int index_strtab;
-    for (int i=0; i < filedata->file_header.e_shnum; i++){
-        temp=shstrtab;
-        temp=temp+filedata->section_headers[i].sh_name;
-        if(strcmp(temp, ".strtab")!=0) continue;
-        index_strtab=i;
-    }
-    rewind(fp);
-    fseek(fp, filedata->section_headers[index_strtab].sh_offset, SEEK_SET);
-    char strtab[filedata->section_headers[index_strtab].sh_size];
-    char *strtemp=strtab;
-    a = fread(strtab, filedata->section_headers[index_strtab].sh_size, 1, fp);
-    if (0 == a) {
-        printf("\nfail to read\n");
-    }
+//    int index_strtab;
+//    for (int i=0; i < filedata->file_header.e_shnum; i++){
+//        temp=shstrtab;
+//        temp=temp+filedata->section_headers[i].sh_name;
+//        if(strcmp(temp, ".strtab")!=0) continue;
+//        index_strtab=i;
+//    }
+//    rewind(fp);
+//    fseek(fp, filedata->section_headers[index_strtab].sh_offset, SEEK_SET);
+//    char strtab[filedata->section_headers[index_strtab].sh_size];
+//    char *strtemp=strtab;
+//    a = fread(strtab, filedata->section_headers[index_strtab].sh_size, 1, fp);
+//    if (0 == a) {
+//        printf("\nfail to read\n");
+//    }
+    char *strtemp=filedata->string_table;
 
     // ?~A~M?~N~F
 
@@ -128,7 +129,7 @@ void read_symbol_table(char filename, Filedata * filedata) {
                     break;
 
             }
-            strtemp=strtab;
+            strtemp=filedata->string_table;;
             strtemp=strtemp+symtable[j].st_name;
             printf(" %s\n", strtemp);
         }
