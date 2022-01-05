@@ -243,6 +243,38 @@ char * get_machine_name(unsigned e_machine){
 }
 
 /*
+Get OS/ABI Name
+*/
+char * get_osabi(Filedata *filedata, unsigned int osabi){
+    switch (osabi){
+        case ELFOSABI_NONE:		return "UNIX - System V";
+        case ELFOSABI_HPUX:		return "UNIX - HP-UX";
+        case ELFOSABI_NETBSD:	return "UNIX - NetBSD";
+        case ELFOSABI_GNU:		return "UNIX - GNU";
+        case ELFOSABI_SOLARIS:	return "UNIX - Solaris";
+        case ELFOSABI_AIX:		return "UNIX - AIX";
+        case ELFOSABI_IRIX:		return "UNIX - IRIX";
+        case ELFOSABI_FREEBSD:	return "UNIX - FreeBSD";
+        case ELFOSABI_TRU64:	return "UNIX - TRU64";
+        case ELFOSABI_MODESTO:	return "Novell - Modesto";
+        case ELFOSABI_OPENBSD:	return "UNIX - OpenBSD";
+    default:
+        if (osabi >= 64)
+	    switch (filedata->file_header.e_machine){
+	        case EM_ARM:
+	            switch (osabi){
+	                case ELFOSABI_ARM:	return "ARM";
+	            default:
+		            break;
+	            }
+	            break;
+            default: break;
+    }
+    return "<unknown>";
+    }
+}
+
+/*
 Get File Header
 
 */
@@ -310,7 +342,7 @@ bool process_file_header(Filedata * filedata){
     printf(" Version:                           %d%s\n", header->e_ident[EI_VERSION], 
                                                         (header->e_ident[EI_VERSION] == EV_CURRENT ? (" (current)") : 
                                                         (header->e_ident[EI_VERSION] != EV_NONE) ? (" <unknown>") : ""));
-    printf(" OS/ABI                             TO DO\n");
+    printf(" OS/ABI:                            %s\n", get_osabi(filedata, header->e_ident[EI_OSABI]));
     printf(" ABI Version                        %d\n", header->e_ident[EI_ABIVERSION]);
     printf(" Type:                              %s\n", get_file_type(filedata->file_header.e_type));
     printf(" Machine:                           %s\n", get_machine_name(header->e_machine));

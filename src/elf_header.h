@@ -1,4 +1,5 @@
 #include "readelf.h"
+#include <elf.h>
 
 #ifndef _FILE_HEADER_
 #define _FILE_HEADER_
@@ -46,6 +47,11 @@ char * get_file_type(unsigned e_type);
 Get Machine Name
 */
 char * get_machine_name(unsigned e_machine);
+
+/*
+Get OS/ABI Name
+*/
+char * get_osabi(Filedata *filedata, unsigned int osabi);
 
 /*
 Get File Header
