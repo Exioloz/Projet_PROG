@@ -20,6 +20,11 @@ typedef struct elf_shdr {
   unsigned int	sh_entsize;		
 } Elf_Shdr;
 
+typedef struct{
+  Elf32_Word rel_sh_name;
+  Elf32_Rel* rel_tab;
+} Elf32_Ext_Rel ;
+
 /**/
 typedef struct filedata {
     const char *        file_name;
@@ -29,6 +34,7 @@ typedef struct filedata {
     uint32_t           file_size;
     Elf_Shdr *          section_headers;
     Elf32_Phdr *        program_headers;
+    Elf32_Ext_Rel *      reloc_table;
     char *              string_table;
     int                 string_table_length;
 } Filedata;

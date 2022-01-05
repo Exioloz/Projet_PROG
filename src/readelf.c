@@ -1,6 +1,7 @@
 #include "readelf.h"
 #include "elf_header.h"
 #include "elf_shdrs.h"
+#include "elf_reltab.h"
 
 /*
 big_endian - only for 32 bits
