@@ -1,10 +1,9 @@
 #include "readelf.h"
 #include "elf_header.h"
 #include "elf_shdrs.h"
-#include "elf_symtab.h"
+#include "elf_symbol_table.h"
 #include "elf_reltab.h"
 #include "read_section.h"
-#include "elf_symbol.h"
 
 uint16_t change_endian_16(uint16_t num){
   return (num >> 8) | (num << 8);
