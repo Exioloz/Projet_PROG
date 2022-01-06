@@ -237,7 +237,6 @@ char * get_machine_name(unsigned e_machine){
                         /* reserved 225-242 */
         case EM_RISCV:          return("RISC-V"); break;
         case EM_BPF:            return("Linux BPF -- in-kernel virtual machine"); break;
-        case EM_CSKY:           return("C-SKY"); break;
         default:                return("Reserved for future use"); break;
     }
 }
