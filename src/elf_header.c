@@ -237,7 +237,6 @@ char * get_machine_name(unsigned e_machine){
                         /* reserved 225-242 */
         case EM_RISCV:          return("RISC-V"); break;
         case EM_BPF:            return("Linux BPF -- in-kernel virtual machine"); break;
-        case EM_CSKY:           return("C-SKY"); break;
         default:                return("Reserved for future use"); break;
     }
 }
@@ -331,33 +330,33 @@ bool process_file_header(Filedata * filedata){
         return false;
     }
     unsigned i;
-    printf("Elf Header:\n");
-    printf(" Magic:   ");
+    printf("ELF Header:\n");
+    printf("  Magic:   ");
     for (i = 0; i < EI_NIDENT; i++){
         printf("%2.2x ", header->e_ident[i]);
     }
     printf("\n");
-    printf(" Class:                             %s\n", get_elf_class(header->e_ident[EI_CLASS]));
-    printf(" Data:                              %s\n", get_elf_data(header->e_ident[EI_DATA]));
-    printf(" Version:                           %d%s\n", header->e_ident[EI_VERSION], 
+    printf("  Class:                             %s\n", get_elf_class(header->e_ident[EI_CLASS]));
+    printf("  Data:                              %s\n", get_elf_data(header->e_ident[EI_DATA]));
+    printf("  Version:                           %d%s\n", header->e_ident[EI_VERSION], 
                                                         (header->e_ident[EI_VERSION] == EV_CURRENT ? (" (current)") : 
                                                         (header->e_ident[EI_VERSION] != EV_NONE) ? (" <unknown>") : ""));
-    printf(" OS/ABI:                            %s\n", get_osabi(filedata, header->e_ident[EI_OSABI]));
-    printf(" ABI Version                        %d\n", header->e_ident[EI_ABIVERSION]);
-    printf(" Type:                              %s\n", get_file_type(filedata->file_header.e_type));
-    printf(" Machine:                           %s\n", get_machine_name(header->e_machine));
-    printf(" Version                            0x%x\n", header->e_version);
-    printf(" Entry point address                0x%x\n", header->e_entry);
-    printf(" Start of program headers           %d (bytes into file)\n", header->e_phoff);
-    printf(" Start of section headers:          %d (bytes into file)\n", header->e_shoff);
-    printf(" Flags:                             0x%x\n", header->e_flags);
-    printf(" Size of this header:               %u (bytes)\n", header->e_ehsize);
-    printf(" Size of program headers:           %u (bytes)\n", header->e_phentsize);
-    printf(" Number of program headers:         %u", header->e_phnum);
+    printf("  OS/ABI:                            %s\n", get_osabi(filedata, header->e_ident[EI_OSABI]));
+    printf("  ABI Version:                       %d\n", header->e_ident[EI_ABIVERSION]);
+    printf("  Type:                              %s\n", get_file_type(filedata->file_header.e_type));
+    printf("  Machine:                           %s\n", get_machine_name(header->e_machine));
+    printf("  Version:                           0x%x\n", header->e_version);
+    printf("  Entry point address:               0x%x\n", header->e_entry);
+    printf("  Start of program headers:          %d (bytes into file)\n", header->e_phoff);
+    printf("  Start of section headers:          %d (bytes into file)\n", header->e_shoff);
+    printf("  Flags:                             0x%x\n", header->e_flags);
+    printf("  Size of this header:               %u (bytes)\n", header->e_ehsize);
+    printf("  Size of program headers:           %u (bytes)\n", header->e_phentsize);
+    printf("  Number of program headers:         %u", header->e_phnum);
     printf("\n");
-    printf(" Size of section headers:           %u (bytes)\n", header->e_shentsize);
-    printf(" Number of section headers:         %u", header->e_shnum);
+    printf("  Size of section headers:           %u (bytes)\n", header->e_shentsize);
+    printf("  Number of section headers:         %u", header->e_shnum);
     printf("\n");
-    printf(" Section header string table index: %u\n", header->e_shstrndx);
+    printf("  Section header string table index: %u\n", header->e_shstrndx);
     return true;
 }
