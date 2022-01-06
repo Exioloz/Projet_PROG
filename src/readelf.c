@@ -81,10 +81,29 @@ static bool process_object_file(Filedata * filedata){
         return false;
     }
 
+    if (!get_symbol_table(filedata)){
+        fprintf(stderr, "%s: Failed to read symbol table\n", filedata->file_name);
+        free_filedata(filedata);
+        return false;
+    }
+
+
     if (!process_symbol_table(filedata)){
             free_filedata(filedata);
             return false;
         }
+
+    if (!get_rel_table(filedata)){
+        fprintf(stderr, "%s: Failed to read relocation table\n", filedata->file_name);
+        free_filedata(filedata);
+        return false;
+    }
+
+    if (!process_rel_table(filedata)){
+            free_filedata(filedata);
+            return false;
+        }
+
     return true;
 }
 

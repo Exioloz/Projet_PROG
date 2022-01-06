@@ -4,14 +4,6 @@ bool section_type_is_rel(Elf32_Word sec_type){
   return (sec_type==SHT_REL) ? true : false ;
 }
 
-uint16_t change_endian_16(uint16_t num){
-  return (num >> 8) | (num << 8);
-}
-
-uint32_t change_endian_32(uint32_t num){
-  return (num >> 24) | ((num >> 8) & 0x0000ff00) | ((num << 8) & 0x00ff0000) | (num << 24) ;
-}
-
 char* get_reloc_type(Elf32_Word rel_info){
   switch(rel_info){
     case R_ARM_NONE: return("R_ARM_NONE"); break;   /* No reloc */
@@ -227,9 +219,12 @@ bool get_rel_table(Filedata *filedata){
 
 bool process_rel_table(Filedata *filedata){
   int i,j;
+  int idx ;
   Elf32_Rel_Tab tab = filedata->reloc_table;
   int tab_ent = tab.rel_num;
   Elf32_Ext_Rel* ents;
+  Elf32_Sym * symtab = filedata->symbol_table.sym_entries;
+  Elf32_Shdr* sections = filedata->section_headers;
   for (i = 0 , ents = tab.rel_tab ; i < tab_ent ; i++, ents++){
     if(ents->rel_ent_num == 1){
       printf("Relocation section '%s' at offset 0x%x contains %d entry:\n", get_section_name(filedata, ents->rel_sh_name), 
@@ -244,7 +239,9 @@ bool process_rel_table(Filedata *filedata){
         printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_offset));
         printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_info));
         printf("%s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info))));
-        //printf("%8.8x  ", ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info)));
+        idx = ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info));
+        printf("%8.8x  ", get_st_value(symtab, idx));
+        printf("%s     ", get_section_name(filedata, sections[change_endian_16(symtab[idx].st_shndx)].sh_name));
         printf("\n");
        }
       printf("\n");
