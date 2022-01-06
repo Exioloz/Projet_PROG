@@ -265,6 +265,7 @@ bool process_rel_table(Filedata *filedata){
   Elf32_Shdr* sections = filedata->section_headers; // get section headers from filedata
 
   // prints comment if there are no relocation tables in the file
+  printf("\n");
   if(tab_ent == 0){
     printf("There are no relocations in this file.\n");
   }
