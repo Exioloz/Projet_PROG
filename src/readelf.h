@@ -67,6 +67,8 @@ bool process_section_name(Filedata * filedata);
 
 bool process_symtab(Filedata * filedata);
 
+bool process_reloc(Filedata * filedata);
+
 bool process_file(char *file_name);
 
 /*================================================================
