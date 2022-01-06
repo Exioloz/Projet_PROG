@@ -25,7 +25,7 @@ int read_section(Filedata * filedata, char * section_name) {
             printf("Section '%s' has no data to dump\n", temp);
             return false;
         }
-        char  *sign_data=(char*)malloc(sizeof(char)*filedata->section_headers[i].sh_size);
+        unsigned char  *sign_data=(unsigned char*)malloc(sizeof(unsigned char)*filedata->section_headers[i].sh_size);
         if (sign_data == NULL){
             fprintf(stderr, "Memory allocation for sign data failed\n");
             return false;
@@ -34,10 +34,10 @@ int read_section(Filedata * filedata, char * section_name) {
         fseek(filedata->file, filedata->section_headers[i].sh_offset, SEEK_SET);
 
 
-        if (fread(sign_data, sizeof(char)*(filedata->section_headers[i].sh_size), 1, filedata->file)){
+        if (fread(sign_data, sizeof(unsigned char)*(filedata->section_headers[i].sh_size), 1, filedata->file)){
             fprintf(stderr, "Unable to read file\n");
         }
-        char *p = sign_data;
+        unsigned char *p = sign_data;
         int c = 0;
         int addr = filedata->section_headers[i].sh_addr;
         printf("0x%08x ", addr);
@@ -52,7 +52,7 @@ int read_section(Filedata * filedata, char * section_name) {
                 printf(" ");
                 p = p-c;
                 for(int k=0; k<c; k++){
-                    if(*p>33){
+                    if(*p>33 &&  *p<127){
                         printf("%c",*p);
                     }else{
                         printf(".");
@@ -74,7 +74,7 @@ int read_section(Filedata * filedata, char * section_name) {
             }
             p = p-c;
             for(int k=0; k<c; k++){
-                if(*p>33){
+                if(*p>33 &&  *p<127){
                     printf("%c",*p);
                 }else{
                     printf(".");
@@ -90,7 +90,7 @@ int read_section(Filedata * filedata, char * section_name) {
             }
             p = p-c;
             for(int k=0; k<c; k++){
-                if(*p>33){
+                if(*p>33 &&  *p<127){
                     printf("%c",*p);
                 }else{
                     printf(".");
@@ -106,7 +106,7 @@ int read_section(Filedata * filedata, char * section_name) {
             }
             p = p-c;
             for(int k=0; k<c; k++){
-                if(*p>33){
+                if(*p>33 &&  *p<127){
                     printf("%c",*p);
                 }else{
                     printf(".");
@@ -122,7 +122,7 @@ int read_section(Filedata * filedata, char * section_name) {
             }
             p = p-c;
             for(int k=0; k<c; k++){
-                if(*p>33){
+                if(*p>33 &&  *p<127){
                     printf("%c",*p);
                 }else{
                     printf(".");}
