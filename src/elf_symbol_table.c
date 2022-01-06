@@ -5,37 +5,27 @@
 
 char * get_st_type(Elf32_Sym *symtable, int i) {
     switch (symtable[i].st_info & 0xf) {
-        case 0:
-            return "NOTYPE";
-        case 1:
-            return "OBJECT";
-        case 2:
-            return "FUNC";
-        case 3:
-            return "SECTION";
-        case 4:
-            return "FILE";
-        case 13:
-            return "LOPROC";
-        case 15:
-            return "HIPROC";
-
-        default:
-            return ("unknown");
+        case 0:     return "NOTYPE";
+        case 1:     return "OBJECT";
+        case 2:     return "FUNC";
+        case 3:     return "SECTION";
+        case 4:     return "FILE";
+        case 13:    return "LOPROC";
+        case 15:    return "HIPROC";
+        default:    return ("unknown");
     }
 
 }
 
 char * get_st_bind(Elf32_Sym *symtable, int i){
     switch(symtable[i].st_info >> 4){
-        case 0: return "LOCAL";
-        case 1: return "GLOBAL";
-        case 2: return "WEAK";
-        case 3: return "NUM";
-        case 13: return "LOPROC";
-        case 15: return "HIPROC";
-
-        default: return ("unknown");
+        case 0:     return "LOCAL";
+        case 1:     return "GLOBAL";
+        case 2:     return "WEAK";
+        case 3:     return "NUM";
+        case 13:    return "LOPROC";
+        case 15:    return "HIPROC";
+        default:    return ("unknown");
     }
 }
 
@@ -82,7 +72,7 @@ char * get_st_vis(unsigned int other){
 
 }
 
-void process_symbol_table(Filedata * filedata){
+int process_symbol_table(Filedata * filedata){
     rewind(filedata->file);
 
     fseek(filedata->file, filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset, SEEK_SET);
@@ -91,7 +81,8 @@ void process_symbol_table(Filedata * filedata){
 
     size_t a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, filedata->file);
     if (0 == a){
-        printf("\nfail to read\n");
+        fprintf(stderr,"\nFail to read shstrtab\n");
+        return false;
     }
     int index_strtab = 0;
     index_strtab=get_index_strtab(filedata, temp, index_strtab);
@@ -99,7 +90,8 @@ void process_symbol_table(Filedata * filedata){
     char strtab[filedata->section_headers[index_strtab].sh_size];
     a = fread(strtab, filedata->section_headers[index_strtab].sh_size, 1, filedata->file);
     if (0 == a) {
-        printf("\nfail to read\n");
+        fprintf(stderr,"\nFailed to read strtab\n");
+        return false;
     }
     char *strtemp=strtab;
 
@@ -109,14 +101,16 @@ void process_symbol_table(Filedata * filedata){
     printf("La table de symboles << .symtab >> contient %d entrees :\n", number_sym);
     Elf32_Sym *symtable=(Elf32_Sym*)malloc(sizeof(Elf32_Sym) * number_sym);
     if (symtable == NULL){
-        fprintf(stderr, "Not able to allocate memory for symtable");
+        fprintf(stderr, "Not able to allocate memory for symbol table\n");
+        return false;
     }
 
     fseek(filedata->file, filedata->section_headers[index_symtab].sh_offset, SEEK_SET);
 
     a = fread(symtable, sizeof(Elf32_Sym)*number_sym, 1, filedata->file);
     if (0 == a){
-        printf("\nfail to read\n");
+        fprintf(stderr,"\nFailed to read symbol table\n");
+        return false;
     }
 
     printf("%7s  %-8s %s   %s      %s    %s          %s    %s\r\n",
@@ -127,10 +121,11 @@ void process_symbol_table(Filedata * filedata){
         printf("%-8s ", get_st_type(symtable,i));
         printf(" %-8s", get_st_bind(symtable,i));
         printf("%s", get_st_vis(symtable[i].st_other));
-        switch (BigLittleSwap16(symtable[i].st_shndx) {
+        switch (BigLittleSwap16(symtable[i].st_shndx)){
             case 0:
                 printf("UND ");
-                break;case 0xfff1:
+                break;
+            case 0xfff1:
                 printf("ABS ");
                 break;
             case 0xfff2:
@@ -144,5 +139,6 @@ void process_symbol_table(Filedata * filedata){
         strtemp=strtab;
         printf("%s\r\n", get_st_name(symtable, i, strtemp));
     }
+    return true;
 
 }
