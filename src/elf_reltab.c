@@ -1,17 +1,21 @@
 #include "elf_reltab.h"
 
+/*
+  Function: section_type_is_rel
+
+  Takes the sh_type member of a section header and 
+  returns true if the type is SHT_REL
+*/
 bool section_type_is_rel(Elf32_Word sec_type){
   return (sec_type==SHT_REL) ? true : false ;
 }
 
-uint16_t change_endian_16(uint16_t num){
-  return (num >> 8) | (num << 8);
-}
+/*
+  Function: get_reloc_type
 
-uint32_t change_endian_32(uint32_t num){
-  return (num >> 24) | ((num >> 8) & 0x0000ff00) | ((num << 8) & 0x00ff0000) | (num << 24) ;
-}
-
+  Takes the type(r_info) member of a Elf32_Rel entry and
+  returns a string based on the relocation type
+*/
 char* get_reloc_type(Elf32_Word rel_info){
   switch(rel_info){
     case R_ARM_NONE: return("R_ARM_NONE"); break;   /* No reloc */
@@ -182,42 +186,62 @@ char* get_reloc_type(Elf32_Word rel_info){
   }
 }
 
+/*
+  Function: get_rel_table
+
+    Gets the data relating to relocation tables from the ELF file
+    and puts it into filedata.
+*/
 bool get_rel_table(Filedata *filedata){
   int i,j;
-  //int test;
+  int test;
   int nb_relsec = 0;
-  Elf32_Shdr* section = filedata->section_headers;
+  Elf32_Shdr* section = filedata->section_headers; //get section headers from filedata
+
+  //count number of relocation sections
   for (i = 0 ; i < filedata->file_header.e_shnum; i++){
    if(section_type_is_rel(section[i].sh_type)){
      nb_relsec += 1;
    }
   }
+
   filedata->reloc_table.rel_num = nb_relsec;
+  //allocate memory for relocation tables
   filedata->reloc_table.rel_tab = (Elf32_Ext_Rel *) malloc(sizeof(Elf32_Ext_Rel)*nb_relsec);
   if(filedata->reloc_table.rel_tab == NULL){
     printf("Out of memory for allocation.\n");
-    exit(3);
+    return false;
   }
+  
   int offset, ent_num;
   Elf32_Ext_Rel* tab ;
 
   for (i = 0 , tab = filedata->reloc_table.rel_tab ; i < filedata->file_header.e_shnum; i++){
     if(section_type_is_rel(section[i].sh_type)){
-      //printf("Found relocation section %s\n", get_section_name(filedata, section[i].sh_name)); 
+      //get offset, num of entries, and section name
       offset = section[i].sh_offset;
       ent_num = section[i].sh_size/8;
       tab->rel_ent_num = ent_num;
       tab->rel_sh_name = section[i].sh_name;
       tab->rel_sh_offset = offset;
+      //allocate memory or individual relocation table
       tab->rel_ents = (Elf32_Rel *) malloc(sizeof(Elf32_Rel)*ent_num);
       if(tab->rel_ents == NULL){
         printf("Out of memory for allocation.\n");
-        exit(3);
+        return false;
       }
+      //get relocation table entries
       for(j = 0 ; j < ent_num ; j++){
-        fseek(filedata->file, offset+j*sizeof(Elf32_Rel), SEEK_SET);
-        //printf("offset = %lx\n", offset+j*sizeof(Elf32_Rel));
-        fread(&(tab->rel_ents[j]), sizeof(tab->rel_ents[j]), 1, filedata->file);
+        test = fseek(filedata->file, offset+j*sizeof(Elf32_Rel), SEEK_SET);
+        if(test != 0){
+          fprintf(stderr, "Failed to seek relocation table.\n");
+          return false;
+        }
+        test = fread(&(tab->rel_ents[j]), sizeof(tab->rel_ents[j]), 1, filedata->file);
+          if(test != 1){
+          fprintf(stderr, "Failed to read relocation table.\n");
+          return false;
+        }
        }
        tab++;
     }
@@ -225,11 +249,21 @@ bool get_rel_table(Filedata *filedata){
   return true;
 }
 
+/*
+    Function: process_rel_table
+    
+    Prints the data taken with get_rel_table in filedata
+    in a similar format to readelf.
+*/
 bool process_rel_table(Filedata *filedata){
   int i,j;
-  Elf32_Rel_Tab tab = filedata->reloc_table;
+  int idx ;
+  Elf32_Rel_Tab tab = filedata->reloc_table; //get relocation tables from filedata
   int tab_ent = tab.rel_num;
-  Elf32_Ext_Rel* ents;
+  Elf32_Ext_Rel* ents; //placeholder address for individual relocation table
+  Elf32_Sym * symtab = filedata->symbol_table.sym_entries; //get symbol table from filedata
+  Elf32_Shdr* sections = filedata->section_headers; // get section headers from filedata
+  // for loop iterating the multiple relocation tables
   for (i = 0 , ents = tab.rel_tab ; i < tab_ent ; i++, ents++){
     if(ents->rel_ent_num == 1){
       printf("Relocation section '%s' at offset 0x%x contains %d entry:\n", get_section_name(filedata, ents->rel_sh_name), 
@@ -240,11 +274,14 @@ bool process_rel_table(Filedata *filedata){
               ents->rel_sh_offset, ents->rel_ent_num ); 
     }
     printf(" Offset     Info    Type            Sym.Value  Sym. Name\n");
+      //for loop iterating the j Elf32_Rel entries of relocation table i
       for(j = 0 ; j < ents->rel_ent_num ; j++){
-        printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_offset));
-        printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_info));
-        printf("%s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info))));
-        //printf("%8.8x  ", ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info)));
+        printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_offset)); //print offset
+        printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_info)); //print info
+        printf("%s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info)))); //print type
+        idx = ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info)); //gets index of symbol in symbol table
+        printf("%8.8x  ", get_st_value(symtab, idx)); //print sym value
+        printf("%s     ", get_section_name(filedata, sections[change_endian_16(symtab[idx].st_shndx)].sh_name)); //print sym name
         printf("\n");
        }
       printf("\n");

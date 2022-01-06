@@ -11,7 +11,8 @@ int read_section(Filedata * filedata, char * section_name) {
     char *temp = shstrtab;
     size_t a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, filedata->file);
     if (0 == a){
-        printf("\nfail to read\n");
+        fprintf(stderr,"\nFailed to shstrtab\n");
+        return false;
     }
 
     for (int i = 0; i < filedata->file_header.e_shnum; i++){
@@ -19,10 +20,10 @@ int read_section(Filedata * filedata, char * section_name) {
         if (strcmp(temp, section_name) != 0) continue;//该section?~P~M?
         printf("\n");
         printf("Vidange hexadecimale de la section <<  %s>> :\n", temp);
-        printf("Offset: %x\n", filedata->section_headers[i].sh_offset);
-        printf("La taille: %x\n", filedata->section_headers[i].sh_size);
+        //printf("Offset: %x\n", filedata->section_headers[i].sh_offset);
+        //printf("La taille: %x\n", filedata->section_headers[i].sh_size);
         if (filedata->section_headers[i].sh_size == 0){
-            printf("Section '%s' has no data to dump\n", temp);
+            fprintf(stderr,"Section '%s' has no data to dump\n", temp);
             return false;
         }
         unsigned char  *sign_data=(unsigned char*)malloc(sizeof(unsigned char)*filedata->section_headers[i].sh_size);
@@ -32,15 +33,15 @@ int read_section(Filedata * filedata, char * section_name) {
         }
 
         fseek(filedata->file, filedata->section_headers[i].sh_offset, SEEK_SET);
-
-
-        if (fread(sign_data, sizeof(unsigned char)*(filedata->section_headers[i].sh_size), 1, filedata->file)){
-            fprintf(stderr, "Unable to read file\n");
+        a = fread(sign_data, sizeof(unsigned char)*(filedata->section_headers[i].sh_size), 1, filedata->file);
+        if (a == 0){
+            fprintf(stderr,"Failed to read sign data\n");
+            return false;
         }
         unsigned char *p = sign_data;
         int c = 0;
         int addr = filedata->section_headers[i].sh_addr;
-        printf("0x%08x ", addr);
+        printf("  0x%08x ", addr);
         for (int j=0; j<filedata->section_headers[i].sh_size; j++){
             printf("%02x", *p);
             p++;
@@ -62,7 +63,7 @@ int read_section(Filedata * filedata, char * section_name) {
                 printf("\n");
                 if (j<filedata->section_headers[i].sh_size-1){
                     addr=addr+16;
-                    printf("0x%08x ", addr);
+                    printf("  0x%08x ", addr);
                 }
                 c=0;
             }

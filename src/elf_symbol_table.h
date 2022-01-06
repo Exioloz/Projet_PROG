@@ -1,16 +1,14 @@
-#include <stdio.h>
-#include <memory.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
 #include "elf_header.h"
 #include "readelf.h"
-#include <elf.h>
 #include "elf_shdrs.h"
-#include <ctype.h>
+#include <string.h>
 
-int process_symbol_table(Filedata * filedata);
+#ifndef _ELF_SYMBOL_TABLE_
+#define _ELF_SYMBOL_TABLE_
+
+bool get_symbol_table(Filedata * filedata);
+
+bool process_symbol_table(Filedata * filedata);
 
 char * get_st_type(Elf32_Sym *symtable, int i);
 
@@ -27,3 +25,5 @@ int get_st_size(Elf32_Sym *symtable, int i);
 char * get_st_vis(unsigned int other);
 
 char * get_st_name(Elf32_Sym *symtable, int i,char * strtemp);
+
+#endif

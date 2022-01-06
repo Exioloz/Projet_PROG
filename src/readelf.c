@@ -8,22 +8,33 @@
 /*================================================================
     Global Variables for options
   ================================================================*/
-int header = 0, sectHead = 0, section = 0, symtab = 0;
+int header = 0, sectHead = 0, section = 0, symtab = 0, reloc = 0;
 char * name;
 
 
 /*================================================================
     Functions to obtain good data
   ================================================================*/
+
+/*
+change_endian_16:
+  changes a 16-bit integer from little-endian to big-endian (or vice-versa)
+*/
 uint16_t change_endian_16(uint16_t num){
   return (num >> 8) | (num << 8);
 }
 
+/*
+change_endian_32:
+  changes a 32-bit integer from little-endian to big-endian (or vice-versa)
+*/
 uint32_t change_endian_32(uint32_t num){
   return (num >> 24) | ((num >> 8) & 0x0000ff00) | ((num << 8) & 0x00ff0000) | (num << 24) ;
 }
 
-// big_endian for chars - only for 32 bits 
+/*
+big_endian - only for 32 bits
+*/
 unsigned big_endian(unsigned char *field, int size){
     switch (size){
         case 1:
@@ -55,6 +66,7 @@ bool process_header(Filedata * filedata){
         return false;
     }
     if (!process_file_header(filedata)){
+        fprintf(stderr,"Failed to File Header\n");
         free_filedata(filedata);
         return false;
     }
@@ -100,6 +112,7 @@ bool process_section_name(Filedata * filedata){
         return false;
     }
     if (!read_section(filedata, name)){
+        fprintf(stderr,"Failed to process section %s\n", name);
         free_filedata(filedata);
         return false;
     }
@@ -121,13 +134,51 @@ bool process_symtab(Filedata * filedata){
         free_filedata(filedata);
         return false;
     }
+    if (!get_symbol_table(filedata)){
+        fprintf(stderr, "%s: Failed to read symbol table\n", filedata->file_name);
+        free_filedata(filedata);
+        return false;
+    }
     if (!process_symbol_table(filedata)){
+        fprintf(stderr,"Failed to process symbol table\n");
         free_filedata(filedata);
         return false;
     }
     return true;
 }
 
+/*
+Process Relocation
+Should print the same as the option -r of readelf
+*/
+bool process_reloc(Filedata * filedata){
+    if (!get_file_header(filedata)){
+        fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
+        free_filedata(filedata);
+        return false;
+    }
+    if (!get_section_headers(filedata)){
+        fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
+        free_filedata(filedata);
+        return false;
+    }
+    if (!get_symbol_table(filedata)){
+        fprintf(stderr, "%s: Failed to read symbol table\n", filedata->file_name);
+        free_filedata(filedata);
+        return false;
+    }
+    if (!get_rel_table(filedata)){
+        fprintf(stderr, "%s: Failed to read relocation table\n", filedata->file_name);
+        free_filedata(filedata);
+        return false;
+    }
+    if (!process_rel_table(filedata)){
+        fprintf(stderr,"Failed to process relocation\n");
+        free_filedata(filedata);
+        return false;
+    }
+    return true;
+}
 /*
 Process File - verifies that we can open and read the file
 */
@@ -171,6 +222,11 @@ bool process_file(char *file_name){
     if (symtab){
         rewind(filedata->file);
         if (!process_symtab(filedata))
+            return false;
+    }
+    if (reloc){
+        rewind(filedata->file);
+        if (!process_reloc(filedata))
             return false;
     }
     
@@ -220,7 +276,7 @@ void help(){
 int main(int argc, char ** argv){
     for (int i=1; i < argc-1; i++){
         if(!strcmp(argv[i], "-a"))
-            header = sectHead = symtab = 1;
+            header = sectHead = symtab = reloc = 1;
         else if(!strcmp(argv[i], "-e"))
             header = sectHead = 1;
         else if(!strcmp(argv[i], "-h"))
@@ -242,6 +298,8 @@ int main(int argc, char ** argv){
         }
         else if(!strcmp(argv[i], "-s"))
             symtab = 1;
+        else if(!strcmp(argv[i], "-r"))
+            reloc = 1;
         else{
             fprintf(stderr,"%s is not a valid option\n", argv[i]);
             goto exit;

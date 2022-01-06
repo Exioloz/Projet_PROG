@@ -70,6 +70,30 @@ bool get_section_headers(Filedata *filedata){
         internal->sh_addralign = big_endian(shdrs[i].sh_addralign, sizeof(shdrs[i].sh_addralign));
         internal->sh_entsize   = big_endian(shdrs[i].sh_entsize, sizeof(shdrs[i].sh_entsize));
     }
+
+    Elf32_Shdr * section;
+    // Verify if error with section headers
+    if (filedata->file_header.e_shnum == 0){
+        if (filedata->file_header.e_shoff != 0){
+            fprintf(stderr, "Section header offset is non-zero, but no section headers\n");
+            return false;
+        }
+        else 
+            printf("There are no sections in this file.\n");
+        return true;
+    }
+
+    // Get String Table for Section Header Names
+    if (filedata->file_header.e_shstrndx != SHN_UNDEF
+        && filedata->file_header.e_shstrndx < filedata->file_header.e_shnum){
+        section = filedata->section_headers + filedata->file_header.e_shstrndx;
+        if (section->sh_size != 0){
+            filedata->string_table = (char *) get_section (NULL, filedata, section->sh_offset, 1, section->sh_size);
+            filedata->string_table_length = filedata->string_table != NULL ? section->sh_size : 0;
+        }
+        else
+            printf("Size is 0???\n");
+    }
     // Verify that obtained values are valid
     if (filedata->section_headers->sh_link > num)
 	    fprintf(stderr,"Section %u has an out of range sh_link value of %u\n", i, filedata->section_headers->sh_link);
@@ -180,28 +204,8 @@ Process Section Headers
 */
 bool process_section_headers(Filedata * filedata){
     Elf32_Shdr * section;
-    // Verify if error with section headers
-    if (filedata->file_header.e_shnum == 0){
-        if (filedata->file_header.e_shoff != 0){
-            fprintf(stderr, "Section header offset is non-zero, but no section headers\n");
-            return false;
-        }
-        else 
-            printf("There are no sections in this file.\n");
-        return true;
-    }
-
-    // Get String Table for Section Header Names
-    if (filedata->file_header.e_shstrndx != SHN_UNDEF
-        && filedata->file_header.e_shstrndx < filedata->file_header.e_shnum){
-        section = filedata->section_headers + filedata->file_header.e_shstrndx;
-        if (section->sh_size != 0){
-            filedata->string_table = (char *) get_section (NULL, filedata, section->sh_offset, 1, section->sh_size);
-            filedata->string_table_length = filedata->string_table != NULL ? section->sh_size : 0;
-        }
-        else
-            printf("Size is 0???\n");
-    }
+    
+    section = filedata->section_headers + filedata->file_header.e_shstrndx;
 
     // Print Section Header information to output
     printf("\nSection Headers:\n");
@@ -232,7 +236,7 @@ bool process_section_headers(Filedata * filedata){
         printf("y (purecode), ");
     else if (filedata->file_header.e_machine == EM_PPC)
         printf("v (VLE), ");
-    printf("p (processor specific)\n");
+    printf("p (processor specific)\n\n");
 
 
     return true;
