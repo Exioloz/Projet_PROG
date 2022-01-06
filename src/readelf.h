@@ -31,7 +31,7 @@ typedef struct{
   Elf32_Half sym_tab_num;
   Elf32_Ext_Sym* sym_ext_tabs;
 } Elf32_Sym_Tab;
-/**/
+
 /*
 Data Structure for ELF files which contains the data 
 of each part of an object file
@@ -43,25 +43,43 @@ typedef struct filedata {
     uint32_t            file_offset;
     uint32_t            file_size;
     Elf32_Shdr *        section_headers;
-    Elf32_Phdr *        program_headers;
     Elf32_Rel_Tab       reloc_table;
-    Elf32_Sym_Tab          symbol_table;
+    Elf32_Sym_Tab       symbol_table;
     char *              string_table;
     int                 string_table_length;
 } Filedata;
 
 #endif
 
-/*
-Free Filedata (to not have repetitive code)
-*/
-void free_filedata(Filedata * filedata);
-
-/*
-big_endian - only for 32 bits
-*/
-unsigned big_endian(unsigned char *field, int size);
+/*================================================================
+    Functions to obtain good data
+  ================================================================*/
 
 uint16_t change_endian_16(uint16_t num);
 
 uint32_t change_endian_32(uint32_t num);
+
+unsigned big_endian(unsigned char *field, int size);
+
+
+/*================================================================
+    Functions to process file depending on options
+  ================================================================*/
+
+bool process_header(Filedata * filedata);
+
+bool process_sections_header(Filedata * filedata);
+
+bool process_section_name(Filedata * filedata);
+
+bool process_symtab(Filedata * filedata);
+
+bool process_file(char *file_name);
+
+/*================================================================
+    Functions for details of file
+  ================================================================*/
+
+long int size_of_file(FILE * filename);
+
+void free_filedata(Filedata * filedata);
