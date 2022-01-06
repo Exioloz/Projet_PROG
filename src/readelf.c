@@ -1,7 +1,16 @@
 #include "readelf.h"
 #include "elf_header.h"
 #include "elf_shdrs.h"
+#include "elf_symtab.h"
 #include "elf_reltab.h"
+
+uint16_t change_endian_16(uint16_t num){
+  return (num >> 8) | (num << 8);
+}
+
+uint32_t change_endian_32(uint32_t num){
+  return (num >> 24) | ((num >> 8) & 0x0000ff00) | ((num << 8) & 0x00ff0000) | (num << 24) ;
+}
 
 /*
 Free Filedata (to not have repetitive code)
@@ -64,6 +73,10 @@ static bool process_object_file(Filedata * filedata){
         free_filedata(filedata);
         return false;
     }
+
+    //testing
+    //get_rel_table(filedata);
+    //process_rel_table(filedata);
 
     return true;
 }
