@@ -258,8 +258,10 @@ void free_filedata(Filedata * filedata){
 
 void help(){
     printf("\nUsage: ./readelf <option(s)> elf-file\n");
+    printf("Options must be written seperately ie: -h -S\n");
     printf(" Display information about the contents of ELF format files\n Options are:\n");
     printf("  -a --all               Equivalent to: -h -S -s\n");
+    printf("  -e --headers           Equivalent to: -h -l -S\n");
     printf("  -h --file-header       Display the ELF file header\n");
     printf("  -S --section-headers   Display the sections' header\n     --sections          An alias for --section-headers\n");
     printf("  -s --syms              Display the symbol table\n     --symbols           An alias for --syms\n");
@@ -274,6 +276,8 @@ void help(){
 
 // To be changed if we want to read multiple files at once
 int main(int argc, char ** argv){
+    if (argc <= 2)
+        goto exit;
     for (int i=1; i < argc-1; i++){
         if(!strcmp(argv[i], "-a"))
             header = sectHead = symtab = reloc = 1;
