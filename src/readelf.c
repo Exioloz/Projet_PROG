@@ -5,10 +5,18 @@
 #include "elf_reltab.h"
 #include "read_section.h"
 
+/*
+change_endian_16:
+  changes a 16-bit integer from little-endian to big-endian (or vice-versa)
+*/
 uint16_t change_endian_16(uint16_t num){
   return (num >> 8) | (num << 8);
 }
 
+/*
+change_endian_32:
+  changes a 32-bit integer from little-endian to big-endian (or vice-versa)
+*/
 uint32_t change_endian_32(uint32_t num){
   return (num >> 24) | ((num >> 8) & 0x0000ff00) | ((num << 8) & 0x00ff0000) | (num << 24) ;
 }

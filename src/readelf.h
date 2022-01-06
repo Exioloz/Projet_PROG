@@ -9,15 +9,15 @@
 
 
 typedef struct{
-  Elf32_Word rel_sh_name;
-  Elf32_Off rel_sh_offset;
-  Elf32_Half rel_ent_num;
-  Elf32_Rel* rel_ents;
+  Elf32_Word rel_sh_name; //name of the relocation table section
+  Elf32_Off rel_sh_offset; //offset of the section
+  Elf32_Half rel_ent_num; //number of Elf32_Rel entries
+  Elf32_Rel* rel_ents; //table of entries
 } Elf32_Ext_Rel ;
 
 typedef struct{
-  Elf32_Half rel_num;
-  Elf32_Ext_Rel* rel_tab;
+  Elf32_Half rel_num; //number of relocation table sections
+  Elf32_Ext_Rel* rel_tab; //table of relocation tables pertaining to those sections
 } Elf32_Rel_Tab;
 
 typedef struct{
@@ -55,6 +55,14 @@ big_endian - only for 32 bits
 */
 unsigned big_endian(unsigned char *field, int size);
 
+/*
+change_endian_16:
+  changes a 16-bit integer from little-endian to big-endian (or vice-versa)
+*/
 uint16_t change_endian_16(uint16_t num);
 
+/*
+change_endian_32:
+  changes a 32-bit integer from little-endian to big-endian (or vice-versa)
+*/
 uint32_t change_endian_32(uint32_t num);
