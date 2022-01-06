@@ -69,6 +69,8 @@ bool process_symtab(Filedata * filedata);
 
 bool process_reloc(Filedata * filedata);
 
+bool get_filedata(Filedata *filedata);
+
 bool process_file(char *file_name);
 
 /*================================================================

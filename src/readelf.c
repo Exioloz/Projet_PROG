@@ -60,11 +60,6 @@ Process File Header
 Should print the same as option -h of readelf
 */
 bool process_header(Filedata * filedata){
-    if (!get_file_header(filedata)){
-        fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
     if (!process_file_header(filedata)){
         fprintf(stderr,"Failed to File Header\n");
         free_filedata(filedata);
@@ -78,16 +73,6 @@ Process Sections' Header
 Should print the same as option -S of readelf
 */
 bool process_sections_header(Filedata * filedata){
-    if (!get_file_header(filedata)){
-        fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
-    if (!get_section_headers(filedata)){
-        fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
     if (!process_section_headers(filedata)){
         fprintf(stderr,"Failed to process section headers\n");
         free_filedata(filedata);
@@ -101,16 +86,6 @@ Process Section Name
 Should print the same as the option -x ".name of section" of readelf
 */
 bool process_section_name(Filedata * filedata){
-    if (!get_file_header(filedata)){
-        fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
-    if (!get_section_headers(filedata)){
-        fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
     if (!read_section(filedata, name)){
         fprintf(stderr,"Failed to process section %s\n", name);
         free_filedata(filedata);
@@ -124,21 +99,6 @@ Process Symbol Table
 Should print the same as the option -s of readelf
 */
 bool process_symtab(Filedata * filedata){
-    if (!get_file_header(filedata)){
-        fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
-    if (!get_section_headers(filedata)){
-        fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
-    if (!get_symbol_table(filedata)){
-        fprintf(stderr, "%s: Failed to read symbol table\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
     if (!process_symbol_table(filedata)){
         fprintf(stderr,"Failed to process symbol table\n");
         free_filedata(filedata);
@@ -152,6 +112,18 @@ Process Relocation
 Should print the same as the option -r of readelf
 */
 bool process_reloc(Filedata * filedata){
+    if (!process_rel_table(filedata)){
+        fprintf(stderr,"Failed to process relocation\n");
+        free_filedata(filedata);
+        return false;
+    }
+    return true;
+}
+
+/*
+Get Data from file for filedata
+*/
+bool get_filedata(Filedata *filedata){
     if (!get_file_header(filedata)){
         fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
         free_filedata(filedata);
@@ -169,11 +141,6 @@ bool process_reloc(Filedata * filedata){
     }
     if (!get_rel_table(filedata)){
         fprintf(stderr, "%s: Failed to read relocation table\n", filedata->file_name);
-        free_filedata(filedata);
-        return false;
-    }
-    if (!process_rel_table(filedata)){
-        fprintf(stderr,"Failed to process relocation\n");
         free_filedata(filedata);
         return false;
     }
@@ -205,7 +172,9 @@ bool process_file(char *file_name){
     }
     filedata->file_size = size_of_file(filedata->file);
     rewind(filedata->file);
-
+    if (!get_filedata(filedata)){
+        return false;
+    }
     if (header){
         if (!process_header(filedata))
             return false;
