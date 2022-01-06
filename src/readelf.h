@@ -42,8 +42,6 @@ typedef struct filedata {
     int                 string_table_length;
 } Filedata;
 
-#endif
-
 /*================================================================
     Functions to obtain good data
   ================================================================*/
@@ -80,3 +78,5 @@ bool process_file(char *file_name);
 long int size_of_file(FILE * filename);
 
 void free_filedata(Filedata * filedata);
+
+#endif
