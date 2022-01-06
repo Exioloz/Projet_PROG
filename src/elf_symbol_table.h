@@ -12,9 +12,9 @@
 
 void process_symbol_table(Filedata * filedata);
 
-char * get_st_type(unsigned type);
+char * get_st_type(Elf32_Sym *symtable, int i);
 
-char * get_st_bind(unsigned bind);
+char * get_st_bind(Elf32_Sym *symtable, int i);
 
 int get_index_strtab(Filedata * filedata, char * temp, int index_strtab);
 

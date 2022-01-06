@@ -3,8 +3,8 @@
 #define BigLittleSwap32(A) ((((uint32_t)(A) & 0xff000000) >> 24) |  (((uint32_t)(A) & 0x00ff0000) >> 8 ) | (((uint32_t)(A) & 0x0000ff00) << 8 ) | (((uint32_t)(A) & 0x000000ff) << 24))
 #define BigLittleSwap16(A) ((((uint16_t)(A) & 0xff00) >> 8 ) |  (((uint16_t)(A) & 0x00ff) << 8 ))
 
-char * get_st_type(unsigned type) {
-    switch (type) {
+char * get_st_type(Elf32_Sym *symtable, int i) {
+    switch (symtable[i].st_info & 0xf) {
         case 0:
             return "NOTYPE";
         case 1:
@@ -26,8 +26,8 @@ char * get_st_type(unsigned type) {
 
 }
 
-char * get_st_bind(unsigned bind){
-    switch(bind){
+char * get_st_bind(Elf32_Sym *symtable, int i){
+    switch(symtable[i].st_info >> 4){
         case 0: return "LOCAL";
         case 1: return "GLOBAL";
         case 2: return "WEAK";
@@ -38,6 +38,7 @@ char * get_st_bind(unsigned bind){
         default: return ("unknown");
     }
 }
+
 
 int get_index_strtab(Filedata * filedata, char * temp, int index_strtab){
     char * a = temp;
@@ -123,10 +124,10 @@ void process_symbol_table(Filedata * filedata){
     for (int i=0; i<number_sym; i++) {
         printf("%6d:  %08x  %-6u", i, get_st_value(symtable, i), get_st_size(symtable, i));
 
-        printf("%-8s ", get_st_type(symtable[i].st_info));
-        printf(" %-8s", get_st_bind(symtable[i].st_info));
+        printf("%-8s ", get_st_type(symtable,i));
+        printf(" %-8s", get_st_bind(symtable,i));
         printf("%s", get_st_vis(symtable[i].st_other));
-        switch (symtable[i].st_shndx) {
+        switch (BigLittleSwap16(symtable[i].st_shndx) {
             case 0:
                 printf("UND ");
                 break;case 0xfff1:
