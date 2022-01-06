@@ -165,7 +165,8 @@ char * get_section_flags(Filedata * filedata, unsigned int flags){
             case SHF_TLS:		        *temp = 'T'; break;
             case SHF_EXCLUDE:		    *temp = 'E'; break;
             case SHF_COMPRESSED:	    *temp = 'C'; break;
-            default:                    *temp = '-'; break; // TO BE CONTINUED
+            // add x, o, l, y, v
+            default:                    *temp = 'x'; break;
         }
         temp++;
     }
@@ -177,7 +178,7 @@ char * get_section_flags(Filedata * filedata, unsigned int flags){
 Process Section Headers
     Prints Data of section headers and key for flags
 */
-bool process_section_headers (Filedata * filedata){
+bool process_section_headers(Filedata * filedata){
     Elf32_Shdr * section;
     // Verify if error with section headers
     if (filedata->file_header.e_shnum == 0){

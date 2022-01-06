@@ -40,9 +40,9 @@ typedef struct filedata {
     const char *        file_name;
     Elf32_Ehdr          file_header;
     FILE *              file;
-    uint32_t           file_offset;
-    uint32_t           file_size;
-    Elf32_Shdr *          section_headers;
+    uint32_t            file_offset;
+    uint32_t            file_size;
+    Elf32_Shdr *        section_headers;
     Elf32_Phdr *        program_headers;
     Elf32_Rel_Tab       reloc_table;
     Elf32_Sym_Tab          symbol_table;
