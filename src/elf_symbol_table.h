@@ -10,7 +10,7 @@
 #include "elf_shdrs.h"
 #include <ctype.h>
 
-void process_symbol_table(Filedata * filedata);
+int process_symbol_table(Filedata * filedata);
 
 char * get_st_type(Elf32_Sym *symtable, int i);
 
