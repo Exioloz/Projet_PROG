@@ -263,28 +263,35 @@ bool process_rel_table(Filedata *filedata){
   Elf32_Ext_Rel* ents; //placeholder address for individual relocation table
   Elf32_Sym * symtab = filedata->symbol_table.sym_entries; //get symbol table from filedata
   Elf32_Shdr* sections = filedata->section_headers; // get section headers from filedata
-  // for loop iterating the multiple relocation tables
-  for (i = 0 , ents = tab.rel_tab ; i < tab_ent ; i++, ents++){
-    if(ents->rel_ent_num == 1){
-      printf("Relocation section '%s' at offset 0x%x contains %d entry:\n", get_section_name(filedata, ents->rel_sh_name), 
-              ents->rel_sh_offset, ents->rel_ent_num ); 
-    }
-    else{
-      printf("Relocation section '%s' at offset 0x%x contains %d entries:\n", get_section_name(filedata, ents->rel_sh_name), 
-              ents->rel_sh_offset, ents->rel_ent_num ); 
-    }
-    printf(" Offset     Info    Type            Sym.Value  Sym. Name\n");
-      //for loop iterating the j Elf32_Rel entries of relocation table i
-      for(j = 0 ; j < ents->rel_ent_num ; j++){
-        printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_offset)); //print offset
-        printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_info)); //print info
-        printf("%s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info)))); //print type
-        idx = ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info)); //gets index of symbol in symbol table
-        printf("%8.8x  ", get_st_value(symtab, idx)); //print sym value
-        printf("%s     ", get_section_name(filedata, sections[change_endian_16(symtab[idx].st_shndx)].sh_name)); //print sym name
+
+  // prints comment if there are no relocation tables in the file
+  if(tab_ent == 0){
+    printf("There are no relocations in this file.\n");
+  }
+  else{ // if there are relocation tables
+    // for loop iterating the multiple relocation tables
+    for (i = 0 , ents = tab.rel_tab ; i < tab_ent ; i++, ents++){
+      if(ents->rel_ent_num == 1){
+        printf("Relocation section '%s' at offset 0x%x contains %d entry:\n", get_section_name(filedata, ents->rel_sh_name), 
+                ents->rel_sh_offset, ents->rel_ent_num ); 
+      }
+      else{
+        printf("Relocation section '%s' at offset 0x%x contains %d entries:\n", get_section_name(filedata, ents->rel_sh_name), 
+                ents->rel_sh_offset, ents->rel_ent_num ); 
+      }
+      printf(" Offset     Info    Type            Sym.Value  Sym. Name\n");
+        //for loop iterating the j Elf32_Rel entries of relocation table i
+        for(j = 0 ; j < ents->rel_ent_num ; j++){
+          printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_offset)); //print offset
+          printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_info)); //print info
+          printf("%s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info)))); //print type
+          idx = ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info)); //gets index of symbol in symbol table
+          printf("%8.8x  ", get_st_value(symtab, idx)); //print sym value
+          printf("%s     ", get_section_name(filedata, sections[change_endian_16(symtab[idx].st_shndx)].sh_name)); //print sym name
+          printf("\n");
+        }
         printf("\n");
-       }
-      printf("\n");
+    }
   }
   return true;
 }
