@@ -140,14 +140,16 @@ char * get_st_vis(unsigned int other){
 */
 
 bool get_symbol_table(Filedata * filedata) {
+    int size = filedata->section_headers[filedata->file_header.e_shstrndx].sh_size;
+    int offset = filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset;
 
     rewind(filedata->file);
 
-    fseek(filedata->file, filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset, SEEK_SET);
-    char shstrtab[filedata->section_headers[filedata->file_header.e_shstrndx].sh_size];
+    fseek(filedata->file, offset, SEEK_SET);
+    char shstrtab[size];
     char *temp = shstrtab;
 
-    size_t a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, filedata->file);
+    size_t a = fread(shstrtab, size, 1, filedata->file);
     if (0 == a) {
         printf("\nfail to read\n");
         return false;
@@ -199,14 +201,16 @@ bool process_symbol_table(Filedata * filedata){
     Elf32_Sym_Tab sym_tab = filedata->symbol_table;
     Elf32_Half number_sym = sym_tab.sym_tab_num;
     Elf32_Sym* symtable = sym_tab.sym_entries;
+    int size = filedata->section_headers[filedata->file_header.e_shstrndx].sh_size;
+    int offset = filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset;
     
     rewind(filedata->file);
 
-    fseek(filedata->file, filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset, SEEK_SET);
-    char shstrtab[filedata->section_headers[filedata->file_header.e_shstrndx].sh_size];
+    fseek(filedata->file, offset, SEEK_SET);
+    char shstrtab[size];
     char *temp = shstrtab;
 
-    size_t a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, filedata->file);
+    size_t a = fread(shstrtab, size, 1, filedata->file);
     if (0 == a) {
         printf("\nfail to read\n");
         return false;
