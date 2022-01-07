@@ -1,27 +1,43 @@
 #include "read_section.h"
 
-// add Section '.data' has no data to dump. if size == 0
+/*================================================================
+    Process sections from Obtained Data
+  ================================================================*/
+
+/*
+Process read_section
+Input : filedata, section name
+Output : returns a number to determine whether symbol table was processed properly
+         and print data in that section as readelf
+*/
 int read_section(Filedata * filedata, char * section_name) {
-
+/*
+Find the .shstrtab by using filedata->section_headers and e_shstrndx stored in file header
+*/
     rewind(filedata->file);
+    int offset = filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset;
+    int size = filedata->section_headers[filedata->file_header.e_shstrndx].sh_size;
 
-    fseek(filedata->file, filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset, SEEK_SET);
-
-    char shstrtab[filedata->section_headers[filedata->file_header.e_shstrndx].sh_size];
+    fseek(filedata->file, offset, SEEK_SET);
+    char shstrtab[size];
     char *temp = shstrtab;
-    size_t a = fread(shstrtab, filedata->section_headers[filedata->file_header.e_shstrndx].sh_size, 1, filedata->file);
+    size_t a = fread(shstrtab, size, 1, filedata->file);
     if (0 == a){
         fprintf(stderr,"\nFailed to shstrtab\n");
         return false;
     }
-
+/*
+Find the wanted section by comparing the name with every name in .shstrtab
+*/
     for (int i = 0; i < filedata->file_header.e_shnum; i++){
         temp = shstrtab + filedata->section_headers[i].sh_name;
         if (strcmp(temp, section_name) != 0) continue;//该section?~P~M?
+/*
+                              Affichage
+*/
         printf("\n");
         printf("Vidange hexadecimale de la section <<  %s>> :\n", temp);
-        //printf("Offset: %x\n", filedata->section_headers[i].sh_offset);
-        //printf("La taille: %x\n", filedata->section_headers[i].sh_size);
+
         if (filedata->section_headers[i].sh_size == 0){
             fprintf(stderr,"Section '%s' has no data to dump\n", temp);
             return false;
