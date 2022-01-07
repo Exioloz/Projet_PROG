@@ -149,14 +149,8 @@ bool get_filedata(Filedata *filedata){
 /*
 Process File - verifies that we can open and read the file
 */
-bool process_file(char *file_name){
+bool process_file(char *file_name, Filedata * filedata){
     char magic[EI_NIDENT];
-    Filedata * filedata = NULL;
-    filedata = calloc(1, sizeof *filedata);
-    if (filedata == NULL){
-        fprintf(stderr, "Memory allocation failed for file data structure\n");
-        return EXIT_FAILURE;
-    }
     filedata->file_name = file_name;
     filedata->file = fopen(file_name, "rb");
     if (filedata->file == NULL){
@@ -200,7 +194,6 @@ bool process_file(char *file_name){
     }
     
     fclose(filedata->file);
-    free_filedata(filedata);
     return true;
 }
 
@@ -278,10 +271,17 @@ int main(int argc, char ** argv){
             goto exit;
         }
     }
+    Filedata * filedata = NULL;
+    filedata = calloc(1, sizeof *filedata);
+    if (filedata == NULL){
+        fprintf(stderr, "Memory allocation failed for file data structure\n");
+        return EXIT_FAILURE;
+    }
     printf("%s\n", argv[argc-1]);
-    if (! process_file(argv[argc-1])){
+    if (! process_file(argv[argc-1], filedata)){
         goto exit;
     }
+    free_filedata(filedata);
     return EXIT_SUCCESS;
     exit:
         help();
