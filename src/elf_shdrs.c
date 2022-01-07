@@ -7,13 +7,19 @@
   ================================================================*/
 
 /*
-Get Section
-    Reads string table and returns the value of string table from file
+Function: Get Section
+
+    Using the offset, size and number,
+    returns the data obtained from ELF file 
+    starting from the offset position
+        Not just used for section header table
+    
 */
 void * get_section(void *var, Filedata *filedata, unsigned long offset, unsigned long size, unsigned long num){
+    // Verify the size or # of entries is not 0
     if (size == 0 || num == 0)
         return NULL;
-    // Terminate invalid string table sections with '\0'
+    // Allocate memory for section header table
     unsigned long total_size = size * num;
     void * temp_var = var;
     if (temp_var == NULL){
@@ -24,10 +30,10 @@ void * get_section(void *var, Filedata *filedata, unsigned long offset, unsigned
         }
         ((char *)temp_var)[total_size] = '\0';
     }
-
+    // Go to offset position in file
     if (fseek (filedata->file, offset, SEEK_SET))
         return NULL;
-
+    // Obtain the value of section header table
     if (fread(temp_var, size, num, filedata->file)!= num){
         fprintf(stderr, "Unable to read Section Headers\n");
         if (temp_var != var)
@@ -39,13 +45,29 @@ void * get_section(void *var, Filedata *filedata, unsigned long offset, unsigned
 
 /*
 Get Section Headers
-    Obtains data for section headers from file by storing string table into shdrs
+    
+    Obtains the section header table data from 
+    an ELF file and stores it into section_headers
+    
 */
 bool get_section_headers(Filedata *filedata){
+    // Verify the section header entry size and # of entries is not 0
     int size = filedata->file_header.e_shentsize;
     int num = filedata->file_header.e_shnum;
-    if (size == 0 || num == 0)
-        return false;
+    int offset = filedata->file_header.e_shoff;
+    if (num == 0){
+        if (offset != 0){
+            fprintf(stderr, "Section header offset is non-zero, but no section headers\n");
+            return false;
+        }
+        if (size == 0){
+            printf("There are no sections in this file.\n");
+            return true;
+        }
+        return true;
+    }
+    
+    // Allocate memory for temporary section header table
     Elf32_External_Shdr * shdrs = (Elf32_External_Shdr *) get_section(NULL, filedata, filedata->file_header.e_shoff, size, num);
     if (shdrs == NULL)
         return false;
@@ -56,48 +78,38 @@ bool get_section_headers(Filedata *filedata){
         return false;
     }
 
-    Elf32_Shdr * internal;
-    int i;
-    for (i = 0, internal = filedata->section_headers; i < num; i++, internal++){
-        internal->sh_name      = big_endian(shdrs[i].sh_name, sizeof(shdrs[i].sh_name));
-        internal->sh_type      = big_endian(shdrs[i].sh_type, sizeof(shdrs[i].sh_type));
-        internal->sh_flags     = big_endian(shdrs[i].sh_flags, sizeof(shdrs[i].sh_flags));
-        internal->sh_addr      = big_endian(shdrs[i].sh_addr, sizeof(shdrs[i].sh_addr));
-        internal->sh_offset    = big_endian(shdrs[i].sh_offset, sizeof(shdrs[i].sh_offset));
-        internal->sh_size      = big_endian(shdrs[i].sh_size, sizeof(shdrs[i].sh_size));
-        internal->sh_link      = big_endian(shdrs[i].sh_link, sizeof(shdrs[i].sh_link));
-        internal->sh_info      = big_endian(shdrs[i].sh_info, sizeof(shdrs[i].sh_info));
-        internal->sh_addralign = big_endian(shdrs[i].sh_addralign, sizeof(shdrs[i].sh_addralign));
-        internal->sh_entsize   = big_endian(shdrs[i].sh_entsize, sizeof(shdrs[i].sh_entsize));
-    }
-
+    // Transform the obtained data using big endian and store into section_headers
     Elf32_Shdr * section;
-    // Verify if error with section headers
-    if (filedata->file_header.e_shnum == 0){
-        if (filedata->file_header.e_shoff != 0){
-            fprintf(stderr, "Section header offset is non-zero, but no section headers\n");
-            return false;
-        }
-        else 
-            printf("There are no sections in this file.\n");
-        return true;
+    int i;
+    for (i = 0, section = filedata->section_headers; i < num; i++, section++){
+        section->sh_name      = big_endian(shdrs[i].sh_name, sizeof(shdrs[i].sh_name));
+        section->sh_type      = big_endian(shdrs[i].sh_type, sizeof(shdrs[i].sh_type));
+        section->sh_flags     = big_endian(shdrs[i].sh_flags, sizeof(shdrs[i].sh_flags));
+        section->sh_addr      = big_endian(shdrs[i].sh_addr, sizeof(shdrs[i].sh_addr));
+        section->sh_offset    = big_endian(shdrs[i].sh_offset, sizeof(shdrs[i].sh_offset));
+        section->sh_size      = big_endian(shdrs[i].sh_size, sizeof(shdrs[i].sh_size));
+        section->sh_link      = big_endian(shdrs[i].sh_link, sizeof(shdrs[i].sh_link));
+        section->sh_info      = big_endian(shdrs[i].sh_info, sizeof(shdrs[i].sh_info));
+        section->sh_addralign = big_endian(shdrs[i].sh_addralign, sizeof(shdrs[i].sh_addralign));
+        section->sh_entsize   = big_endian(shdrs[i].sh_entsize, sizeof(shdrs[i].sh_entsize));
     }
 
     // Get String Table for Section Header Names
+    Elf32_Shdr * string_section;
     if (filedata->file_header.e_shstrndx != SHN_UNDEF
         && filedata->file_header.e_shstrndx < filedata->file_header.e_shnum){
-        section = filedata->section_headers + filedata->file_header.e_shstrndx;
-        if (section->sh_size != 0){
-            filedata->string_table = (char *) get_section (NULL, filedata, section->sh_offset, 1, section->sh_size);
-            filedata->string_table_length = filedata->string_table != NULL ? section->sh_size : 0;
+        string_section = filedata->section_headers + filedata->file_header.e_shstrndx;
+        if (string_section->sh_size != 0){
+            filedata->string_table = (char *) get_section(NULL, filedata, string_section->sh_offset, 1, string_section->sh_size);
+            filedata->string_table_length = filedata->string_table != NULL ? string_section->sh_size : 0;
         }
         else
             printf("Size is 0???\n");
     }
     // Verify that obtained values are valid
-    if (filedata->section_headers->sh_link > num)
+    if (section->sh_link > num)
 	    fprintf(stderr,"Section %u has an out of range sh_link value of %u\n", i, filedata->section_headers->sh_link);
-    if (filedata->section_headers->sh_flags & SHF_INFO_LINK && filedata->section_headers->sh_info > num)
+    if (section->sh_flags & SHF_INFO_LINK && section->sh_info > num)
 	    fprintf(stderr,"Section %u has an out of range sh_info value of %u\n", i, filedata->section_headers->sh_info);
     free(shdrs);
     return true;
@@ -107,7 +119,11 @@ bool get_section_headers(Filedata *filedata){
     Process File Section Headers from Obtained Data
   ================================================================*/
 /*
-Get Name of Section Type
+Function: Get Section Type
+
+    Using the type value of the section header table,
+    returns the corresponding section type
+
 */
 char * get_section_type(Filedata * filedata, int sh_type){
     switch(sh_type){
@@ -134,7 +150,11 @@ char * get_section_type(Filedata * filedata, int sh_type){
 }
 
 /*
-Get Name of Section Header
+Function: Get Name of Section Header
+
+    Using the index of the section name,
+    returns the name of the section from string table
+
 */
 char * get_section_name(Filedata *filedata, Elf32_Word sh_name){
   if (filedata->string_table == NULL)
@@ -145,7 +165,11 @@ char * get_section_name(Filedata *filedata, Elf32_Word sh_name){
 }
 
 /*
-Print Name of Section Header with correct formatting
+Function: Formatted Section Name
+
+    Using the width and string, 
+    prints the string with the proper spacing for output
+
 */
 void section_name(int width, char * symbol){
     unsigned int remaining_width;
@@ -167,7 +191,11 @@ void section_name(int width, char * symbol){
 }
 
 /*
-Get Section Flags
+Function: Get Section Flags
+
+    Using the flags value of section header,
+    returns the corresponding flag characters
+
 */
 char * get_section_flags(Filedata * filedata, unsigned int flags){
     static char buff[1024];
@@ -198,31 +226,36 @@ char * get_section_flags(Filedata * filedata, unsigned int flags){
     return buff;
 }
 
+/*================================================================
+    Process File Section Headers from Obtained Data
+  ================================================================*/
+
 /*
-Process Section Headers
-    Prints Data of section headers and key for flags
+Function: Process Section Headers
+    
+    Decodes the data in the section header table and
+    prints the section header table in a similar format to readelf
+
 */
 bool process_section_headers(Filedata * filedata){
-    Elf32_Shdr * section;
-    
-    section = filedata->section_headers + filedata->file_header.e_shstrndx;
-
     // Print Section Header information to output
     printf("\nSection Headers:\n");
     printf("  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n");
     
+    Elf32_Shdr * section;
     int i;
     for (i = 0, section = filedata->section_headers; i < filedata->file_header.e_shnum; i++, section++){
-        printf("  [%2u] ", i);
-        section_name(17, get_section_name(filedata, section->sh_name));
-        printf(" %-15.15s ", get_section_type(filedata, section->sh_type));
-        printf("%8.8x" , section->sh_addr);
-	    printf( " %6.6lx %6.6lx %2.2lx", (unsigned long) section->sh_offset, (unsigned long) section->sh_size, (unsigned long) section->sh_entsize);
-        printf(" %3s ", get_section_flags(filedata, section->sh_flags));
-        printf("%2u %3u %2lu\n", section->sh_link, section->sh_info, (unsigned long) section->sh_addralign);
+        printf("  [%2u] ", i); // Print section number
+        section_name(17, get_section_name(filedata, section->sh_name)); // Print section name
+        printf(" %-15.15s ", get_section_type(filedata, section->sh_type)); // Print section type
+        printf("%8.8x" , section->sh_addr); // Print section address
+	    printf( " %6.6lx %6.6lx %2.2lx", (unsigned long) section->sh_offset, (unsigned long) section->sh_size, (unsigned long) section->sh_entsize); // Print section offset, size and # of entries
+        printf(" %3s ", get_section_flags(filedata, section->sh_flags)); // Print section flags
+        printf("%2u %3u %2lu\n", section->sh_link, section->sh_info, (unsigned long) section->sh_addralign); // Print section link, info and address alignment
 
     }
 
+    // Print section header table flag keys
     printf("Key to Flags:\n\
     W (write), A (alloc), X (execute), M (merge), S (strings), I (info),\n\
     L (link order), O (extra OS processing required), G (group), T (TLS),\n\
@@ -236,7 +269,7 @@ bool process_section_headers(Filedata * filedata){
         printf("y (purecode), ");
     else if (filedata->file_header.e_machine == EM_PPC)
         printf("v (VLE), ");
-    printf("p (processor specific)\n\n");
+    printf("p (processor specific)\n");
 
 
     return true;

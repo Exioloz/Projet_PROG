@@ -29,32 +29,55 @@ typedef struct elf32_header{
 } Elf32_Head;
 
 /*
-Get Elf Class
+Function: Get Elf Class
+
+    Using the class value from the ELF file,
+    returns the corresponding capacity (32 or 64)
+
 */
 const char * get_elf_class(unsigned int elf_class);
 
 /*
-Get Elf Data
+Function: Get Elf Data
+
+    Using the data value from the ELF file,
+    returns the data encoding of the data in the file
+
 */
 const char * get_elf_data(unsigned int elf_data);
 
 /*
-Get File Type
+Function: Get File Type
+
+    Using the type value from the ELF file,
+    returns the corresponding file type
+
 */
 char * get_file_type(unsigned e_type);
 
 /*
-Get Machine Name
+Function: Get Machine Name
+
+    Using the machine value from the ELF file,
+    returns the corresponding machine name
+
 */
 char * get_machine_name(unsigned e_machine);
 
 /*
-Get OS/ABI Name
+Function: Get OS/ABI Name
+
+    Using the OSABI value of file header, 
+    returns a corresponding OS/ABI name
+
 */
 char * get_osabi(Filedata *filedata, unsigned int osabi);
 
 /*
-Get File Header
+Function: Get File Header
+
+    Obtains the values of the file header from the ELF file 
+    and stores them into filedata as file_header
 
 */
 bool get_file_header(Filedata *filedata);
@@ -64,10 +87,11 @@ bool get_file_header(Filedata *filedata);
   ================================================================*/
 
 /*
-Process File Header
-Input : filedata
-Output : returns a bool to determine whether file header was processed properly
-Decodes the data in the file header and prints as readelf
+Function: Process File Header
+
+    Decodes the data in the file_header and 
+    prints the file header in a similar format to readelf
+
 */
 bool process_file_header(Filedata * filedata);
 
