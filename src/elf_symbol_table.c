@@ -133,7 +133,7 @@ char * get_st_vis(unsigned int other){
 }
 
 /*
-  Function: get_rel_table
+    Function: get_symbol_table
 
     Gets the data relating to symbol table from the ELF file
     and puts it into filedata.
@@ -194,44 +194,19 @@ bool get_symbol_table(Filedata * filedata) {
 Process Symbol Table
 Input : filedata
 Output : returns a bool to determine whether symbol table was processed properly
-Use the data in the structure to print as readelf
+Obtain the data from the structure and print them as readelf
 */
 
 bool process_symbol_table(Filedata * filedata){
     Elf32_Sym_Tab sym_tab = filedata->symbol_table;
     Elf32_Half number_sym = sym_tab.sym_tab_num;
     Elf32_Sym* symtable = sym_tab.sym_entries;
-    int size = filedata->section_headers[filedata->file_header.e_shstrndx].sh_size;
-    int offset = filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset;
-    
-    rewind(filedata->file);
-
-    fseek(filedata->file, offset, SEEK_SET);
-    char shstrtab[size];
-    char *temp = shstrtab;
-
-    size_t a = fread(shstrtab, size, 1, filedata->file);
-    if (0 == a) {
-        printf("\nfail to read\n");
-        return false;
-    }
-    int index_strtab = 0;
-    index_strtab = get_index_strtab(filedata, temp, index_strtab);
-    fseek(filedata->file, filedata->section_headers[index_strtab].sh_offset, SEEK_SET);
-    char strtab[filedata->section_headers[index_strtab].sh_size];
-    a = fread(strtab, filedata->section_headers[index_strtab].sh_size, 1, filedata->file);
-    if (0 == a) {
-        printf("\nfail to read\n");
-        return false;
-    }
-    char *strtemp = strtab;
 
     printf("La table de symboles << .symtab >> contient %d entrees :\n", number_sym);
             printf("%7s  %-8s %s   %s      %s    %s          %s    %s\r\n",
            "Num:", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name");
     for (int i=0; i<number_sym; i++) {
         printf("%6d:  %08x  %-6u", i, get_st_value(symtable, i), get_st_size(symtable, i));
-
 
         printf("%-8s ", get_st_type(symtable,i));
         printf(" %-8s", get_st_bind(symtable,i));
