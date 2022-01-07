@@ -123,7 +123,23 @@ bool process_reloc(Filedata * filedata){
 /*
 Get Data from file for filedata
 */
-bool get_filedata(Filedata *filedata){
+bool get_filedata(char *file_name, Filedata *filedata){
+    char magic[EI_NIDENT];
+    filedata->file_name = file_name;
+    filedata->file = fopen(file_name, "rb");
+    if (filedata->file == NULL){
+        fprintf(stderr,"Input file %s is not readble.\n", file_name);
+        free_filedata(filedata);
+        return false; 
+    }
+    if (fread(magic, EI_NIDENT, 1, filedata->file) != 1){
+        fprintf(stderr,"%s: Failed to read file's magic number\n", file_name);
+        fclose (filedata->file);
+        free_filedata(filedata);
+        return false;
+    }
+    filedata->file_size = size_of_file(filedata->file);
+    rewind(filedata->file);
     if (!get_file_header(filedata)){
         fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
         free_filedata(filedata);
@@ -149,26 +165,7 @@ bool get_filedata(Filedata *filedata){
 /*
 Process File - verifies that we can open and read the file
 */
-bool process_file(char *file_name, Filedata * filedata){
-    char magic[EI_NIDENT];
-    filedata->file_name = file_name;
-    filedata->file = fopen(file_name, "rb");
-    if (filedata->file == NULL){
-        fprintf(stderr,"Input file %s is not readble.\n", file_name);
-        free_filedata(filedata);
-        return false; 
-    }
-    if (fread(magic, EI_NIDENT, 1, filedata->file) != 1){
-        fprintf(stderr,"%s: Failed to read file's magic number\n", file_name);
-        fclose (filedata->file);
-        free_filedata(filedata);
-        return false;
-    }
-    filedata->file_size = size_of_file(filedata->file);
-    rewind(filedata->file);
-    if (!get_filedata(filedata)){
-        return false;
-    }
+bool process_file(Filedata * filedata){
     if (header){
         if (!process_header(filedata))
             return false;
@@ -192,8 +189,6 @@ bool process_file(char *file_name, Filedata * filedata){
         if (!process_reloc(filedata))
             return false;
     }
-    
-    fclose(filedata->file);
     return true;
 }
 
@@ -209,6 +204,7 @@ long int size_of_file(FILE * filename){
 
 // Free Filedata
 void free_filedata(Filedata * filedata){
+    fclose(filedata->file);
     free(filedata->section_headers);
     free(filedata->string_table);
     free(filedata);
@@ -278,7 +274,10 @@ int main(int argc, char ** argv){
         return EXIT_FAILURE;
     }
     printf("%s\n", argv[argc-1]);
-    if (! process_file(argv[argc-1], filedata)){
+    if (! get_filedata(argv[argc-1], filedata)){
+        goto exit;
+    }
+    if (! process_file(filedata)){
         goto exit;
     }
     free_filedata(filedata);
