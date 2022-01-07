@@ -5,7 +5,11 @@
   ================================================================*/
 
 /*
-Get Elf Class
+Function: Get Elf Class
+
+    Using the class value from the ELF file,
+    returns the corresponding capacity (32 or 64)
+
 */
 const char * get_elf_class(unsigned int elf_class){
     switch (elf_class){
@@ -18,7 +22,11 @@ const char * get_elf_class(unsigned int elf_class){
 }
 
 /*
-Get Elf Data
+Function: Get Elf Data
+
+    Using the data value from the ELF file,
+    returns the data encoding of the data in the file
+
 */
 const char * get_elf_data(unsigned int elf_data){
     switch(elf_data){
@@ -31,7 +39,11 @@ const char * get_elf_data(unsigned int elf_data){
 }
 
 /*
-Get File Type
+Function: Get File Type
+
+    Using the type value from the ELF file,
+    returns the corresponding file type
+
 */
 char * get_file_type(unsigned e_type){
     switch (e_type){
@@ -46,7 +58,11 @@ char * get_file_type(unsigned e_type){
     }
 }
 /*
-Get Machine Name
+Function: Get Machine Name
+
+    Using the machine value from the ELF file,
+    returns the corresponding machine name
+
 */
 char * get_machine_name(unsigned e_machine){
     switch (e_machine){
@@ -242,7 +258,11 @@ char * get_machine_name(unsigned e_machine){
 }
 
 /*
-Get OS/ABI Name
+Function: Get OS/ABI Name
+
+    Using the OSABI value of file header, 
+    returns a corresponding OS/ABI name
+
 */
 char * get_osabi(Filedata *filedata, unsigned int osabi){
     switch (osabi){
@@ -274,12 +294,17 @@ char * get_osabi(Filedata *filedata, unsigned int osabi){
 }
 
 /*
-Get File Header
+Function: Get File Header
+
+    Obtains the values of the file header from the ELF file 
+    and stores them into filedata as file_header
 
 */
 bool get_file_header(Filedata *filedata){
+    // Read the ident of file header from ELF file
     if (fread(filedata->file_header.e_ident, EI_NIDENT, 1, filedata->file) != 1)
         return false;
+    // Verify that the file data is big endian
     switch (filedata->file_header.e_ident[EI_DATA]){
         case ELFDATA2MSB:
             break;
@@ -289,23 +314,25 @@ bool get_file_header(Filedata *filedata){
             fprintf(stderr,"Project only in Big Endian\n");
             return false;
     }
+    // Read the rest of the file header
     Elf32_Head header;
     if (fread(header.e_type, sizeof(header) - EI_NIDENT, 1, filedata->file) != 1)
         return false;
     
-    filedata->file_header.e_type            = big_endian(header.e_type, sizeof(header.e_type));
-    filedata->file_header.e_machine         = big_endian(header.e_machine, sizeof(header.e_machine));
-    filedata->file_header.e_version         = big_endian(header.e_version, sizeof(header.e_version));
-    filedata->file_header.e_entry           = big_endian(header.e_entry, sizeof(header.e_entry));
-    filedata->file_header.e_phoff           = big_endian(header.e_phoff, sizeof(header.e_phoff));
-    filedata->file_header.e_shoff           = big_endian(header.e_shoff, sizeof(header.e_shoff));
-    filedata->file_header.e_flags           = big_endian(header.e_flags, sizeof(header.e_flags));
-    filedata->file_header.e_ehsize          = big_endian(header.e_ehsize, sizeof(header.e_ehsize));
-    filedata->file_header.e_phentsize       = big_endian(header.e_phentsize, sizeof(header.e_phentsize));
-    filedata->file_header.e_phnum           = big_endian(header.e_phnum, sizeof(header.e_phnum));
-    filedata->file_header.e_shentsize       = big_endian(header.e_shentsize, sizeof(header.e_shentsize));
-    filedata->file_header.e_shnum           = big_endian(header.e_shnum, sizeof(header.e_shnum));
-    filedata->file_header.e_shstrndx        = big_endian(header.e_shstrndx, sizeof(header.e_shstrndx));
+    // Transform the obtained data using big endian and store into file_header
+    filedata->file_header.e_type            = big_endian(header.e_type, sizeof(header.e_type));             // get type
+    filedata->file_header.e_machine         = big_endian(header.e_machine, sizeof(header.e_machine));       // get machine
+    filedata->file_header.e_version         = big_endian(header.e_version, sizeof(header.e_version));       // get version
+    filedata->file_header.e_entry           = big_endian(header.e_entry, sizeof(header.e_entry));           // get entry
+    filedata->file_header.e_phoff           = big_endian(header.e_phoff, sizeof(header.e_phoff));           // get program header offset
+    filedata->file_header.e_shoff           = big_endian(header.e_shoff, sizeof(header.e_shoff));           // get seection header offset
+    filedata->file_header.e_flags           = big_endian(header.e_flags, sizeof(header.e_flags));           // get flags
+    filedata->file_header.e_ehsize          = big_endian(header.e_ehsize, sizeof(header.e_ehsize));         // get header size
+    filedata->file_header.e_phentsize       = big_endian(header.e_phentsize, sizeof(header.e_phentsize));   // get program header entry size
+    filedata->file_header.e_phnum           = big_endian(header.e_phnum, sizeof(header.e_phnum));           // get # entries in program header
+    filedata->file_header.e_shentsize       = big_endian(header.e_shentsize, sizeof(header.e_shentsize));   // get section header entry size
+    filedata->file_header.e_shnum           = big_endian(header.e_shnum, sizeof(header.e_shnum));           // get # entries in seection header
+    filedata->file_header.e_shstrndx        = big_endian(header.e_shstrndx, sizeof(header.e_shstrndx));     // get shstrndx
     
     return true;
 }
@@ -315,13 +342,15 @@ bool get_file_header(Filedata *filedata){
   ================================================================*/
 
 /*
-Process File Header
-Input : filedata
-Output : returns a bool to determine whether file header was processed properly
-Decodes the data in the file header and prints as readelf
+Function: Process File Header
+
+    Decodes the data in the file_header and 
+    prints the file header in a similar format to readelf
+
 */
 bool process_file_header(Filedata * filedata){
     Elf32_Ehdr * header = & filedata->file_header;
+    // Verify that the file is an ELF file using first 4 bytes
     if (header->e_ident[EI_MAG0] != ELFMAG0 
         || header->e_ident[EI_MAG1] != ELFMAG1 
         || header->e_ident[EI_MAG2] != ELFMAG2 
@@ -332,31 +361,32 @@ bool process_file_header(Filedata * filedata){
     unsigned i;
     printf("ELF Header:\n");
     printf("  Magic:   ");
+    // Print first 16 bytes (Machine Independent Data)
     for (i = 0; i < EI_NIDENT; i++){
         printf("%2.2x ", header->e_ident[i]);
     }
     printf("\n");
-    printf("  Class:                             %s\n", get_elf_class(header->e_ident[EI_CLASS]));
-    printf("  Data:                              %s\n", get_elf_data(header->e_ident[EI_DATA]));
-    printf("  Version:                           %d%s\n", header->e_ident[EI_VERSION], 
+    printf("  Class:                             %s\n", get_elf_class(header->e_ident[EI_CLASS])); // Print class
+    printf("  Data:                              %s\n", get_elf_data(header->e_ident[EI_DATA])); // Print data
+    printf("  Version:                           %d%s\n", header->e_ident[EI_VERSION], // Print ELF header version
                                                         (header->e_ident[EI_VERSION] == EV_CURRENT ? (" (current)") : 
                                                         (header->e_ident[EI_VERSION] != EV_NONE) ? (" <unknown>") : ""));
-    printf("  OS/ABI:                            %s\n", get_osabi(filedata, header->e_ident[EI_OSABI]));
-    printf("  ABI Version:                       %d\n", header->e_ident[EI_ABIVERSION]);
-    printf("  Type:                              %s\n", get_file_type(filedata->file_header.e_type));
-    printf("  Machine:                           %s\n", get_machine_name(header->e_machine));
-    printf("  Version:                           0x%x\n", header->e_version);
-    printf("  Entry point address:               0x%x\n", header->e_entry);
-    printf("  Start of program headers:          %d (bytes into file)\n", header->e_phoff);
-    printf("  Start of section headers:          %d (bytes into file)\n", header->e_shoff);
-    printf("  Flags:                             0x%x\n", header->e_flags);
-    printf("  Size of this header:               %u (bytes)\n", header->e_ehsize);
-    printf("  Size of program headers:           %u (bytes)\n", header->e_phentsize);
-    printf("  Number of program headers:         %u", header->e_phnum);
+    printf("  OS/ABI:                            %s\n", get_osabi(filedata, header->e_ident[EI_OSABI])); // Print OSABI
+    printf("  ABI Version:                       %d\n", header->e_ident[EI_ABIVERSION]); // Print ABI version
+    printf("  Type:                              %s\n", get_file_type(filedata->file_header.e_type)); // Print the object file type
+    printf("  Machine:                           %s\n", get_machine_name(header->e_machine)); // Print machine
+    printf("  Version:                           0x%x\n", header->e_version); // Print object file version
+    printf("  Entry point address:               0x%x\n", header->e_entry); // Print entry
+    printf("  Start of program headers:          %d (bytes into file)\n", header->e_phoff); // Print program header table offset
+    printf("  Start of section headers:          %d (bytes into file)\n", header->e_shoff); // Print section header table offset
+    printf("  Flags:                             0x%x\n", header->e_flags); // Print flags
+    printf("  Size of this header:               %u (bytes)\n", header->e_ehsize); // Print ELF header's size
+    printf("  Size of program headers:           %u (bytes)\n", header->e_phentsize); // Print program header's entry size
+    printf("  Number of program headers:         %u", header->e_phnum); // Print number of entries in program header table
     printf("\n");
-    printf("  Size of section headers:           %u (bytes)\n", header->e_shentsize);
-    printf("  Number of section headers:         %u", header->e_shnum);
+    printf("  Size of section headers:           %u (bytes)\n", header->e_shentsize); // Print section header's entry size
+    printf("  Number of section headers:         %u", header->e_shnum); // Print number of entries in section header table
     printf("\n");
-    printf("  Section header string table index: %u\n", header->e_shstrndx);
+    printf("  Section header string table index: %u\n", header->e_shstrndx); // Print shstrndx
     return true;
 }
