@@ -33,7 +33,8 @@ uint32_t change_endian_32(uint32_t num){
 }
 
 /*
-big_endian - only for 32 bits
+Function: big_endian 
+    Takes strings in 32 bits and performs the big endian operation 
 */
 unsigned big_endian(unsigned char *field, int size){
     switch (size){
@@ -56,8 +57,8 @@ unsigned big_endian(unsigned char *field, int size){
   ================================================================*/
 
 /*
-Process File Header
-Should print the same as option -h of readelf
+Function: Process File Header
+    Should print the same as option -h of readelf
 */
 bool process_header(Filedata * filedata){
     if (!process_file_header(filedata)){
@@ -69,8 +70,8 @@ bool process_header(Filedata * filedata){
 }
 
 /*
-Process Sections' Header
-Should print the same as option -S of readelf
+Function: Process Sections' Header
+    Should print the same as option -S of readelf
 */
 bool process_sections_header(Filedata * filedata){
     if (!process_section_headers(filedata)){
@@ -82,8 +83,8 @@ bool process_sections_header(Filedata * filedata){
 }
 
 /*
-Process Section Name
-Should print the same as the option -x ".name of section" of readelf
+Function: Process Section Name
+    Should print the same as the option -x ".name of section" of readelf
 */
 bool process_section_name(Filedata * filedata){
     if (!read_section(filedata, name)){
@@ -95,8 +96,8 @@ bool process_section_name(Filedata * filedata){
 }
 
 /*
-Process Symbol Table
-Should print the same as the option -s of readelf
+Function: Process Symbol Table
+    Should print the same as the option -s of readelf
 */
 bool process_symtab(Filedata * filedata){
     if (!process_symbol_table(filedata)){
@@ -108,8 +109,8 @@ bool process_symtab(Filedata * filedata){
 }
 
 /*
-Process Relocation
-Should print the same as the option -r of readelf
+Function: Process Relocation
+    Should print the same as the option -r of readelf
 */
 bool process_reloc(Filedata * filedata){
     if (!process_rel_table(filedata)){
@@ -121,17 +122,23 @@ bool process_reloc(Filedata * filedata){
 }
 
 /*
-Get Data from file for filedata
+Function: Get filedata 
+    Obtains and stores the values of the ELF file into
+    the corresponding structure in filedata
 */
 bool get_filedata(char *file_name, Filedata *filedata){
     char magic[EI_NIDENT];
     filedata->file_name = file_name;
+    
+    // Open and verify that file is readable
     filedata->file = fopen(file_name, "rb");
     if (filedata->file == NULL){
         fprintf(stderr,"Input file %s is not readble.\n", file_name);
         free_filedata(filedata);
         return false; 
     }
+
+    // Read and store first 16 bytes of file 
     if (fread(magic, EI_NIDENT, 1, filedata->file) != 1){
         fprintf(stderr,"%s: Failed to read file's magic number\n", file_name);
         fclose (filedata->file);
@@ -140,21 +147,29 @@ bool get_filedata(char *file_name, Filedata *filedata){
     }
     filedata->file_size = size_of_file(filedata->file);
     rewind(filedata->file);
+
+    // Read and store file header 
     if (!get_file_header(filedata)){
         fprintf(stderr, "%s: Failed to read file header\n", filedata->file_name);
         free_filedata(filedata);
         return false;
     }
+
+    // Read and store section headers
     if (!get_section_headers(filedata)){
         fprintf(stderr, "%s: Failed to read section headers\n", filedata->file_name);
         free_filedata(filedata);
         return false;
     }
+
+    // Read and verify symbol table
     if (!get_symbol_table(filedata)){
         fprintf(stderr, "%s: Failed to read symbol table\n", filedata->file_name);
         free_filedata(filedata);
         return false;
     }
+
+    // Read and store relocation table
     if (!get_rel_table(filedata)){
         fprintf(stderr, "%s: Failed to read relocation table\n", filedata->file_name);
         free_filedata(filedata);
@@ -162,29 +177,31 @@ bool get_filedata(char *file_name, Filedata *filedata){
     }
     return true;
 }
+
 /*
-Process File - verifies that we can open and read the file
+Function: Process File 
+    Prints the corresponding options
 */
 bool process_file(Filedata * filedata){
-    if (header){
+    if (header){                                    // print file header
         if (!process_header(filedata))
             return false;
     }
-    if (sectHead){
+    if (sectHead){                                  // print section headers
         rewind(filedata->file);
         if (!process_sections_header(filedata))
             return false;
     }
-    if (section){
+    if (section){                                   // print section
         if (!process_section_name(filedata))
             return false;
     }
-    if (symtab){
+    if (symtab){                                    // print symbol table
         rewind(filedata->file);
         if (!process_symtab(filedata))
             return false;
     }
-    if (reloc){
+    if (reloc){                                     // print relocation table
         rewind(filedata->file);
         if (!process_reloc(filedata))
             return false;
@@ -202,7 +219,11 @@ long int size_of_file(FILE * filename){
     return ftell(filename);
 }
 
-// Free Filedata
+/* 
+Function: Free Filedata
+    Used to free the memory allocated for filedata
+    in order to prevent memory leak
+*/
 void free_filedata(Filedata * filedata){
     fclose(filedata->file);
     free(filedata->section_headers);
@@ -214,6 +235,11 @@ void free_filedata(Filedata * filedata){
     Help Menu in case of user error
   ================================================================*/
 
+/*
+Function: help
+    Displays the options of ./readelf function in case 
+    of misuse
+*/
 void help(){
     printf("\nUsage: ./readelf <option(s)> elf-file\n");
     printf("Options must be written seperately ie: -h -S\n");
@@ -232,20 +258,27 @@ void help(){
     MAIN FUNCTION
   ================================================================*/
 
-// To be changed if we want to read multiple files at once
+/* 
+Function: elf_main
+    Called by readelf main to process the given ELF file
+    depending on the option(s) given by the user.
+    If no option is given, help is written in terminal. 
+*/
 int elf_main(int argc, char ** argv){
+    // Verify that at least one option is given
     if (argc <= 2)
         goto exit;
+    // Verify which options are given and if they are valid
     for (int i=1; i < argc-1; i++){
-        if(!strcmp(argv[i], "-a"))
+        if(!strcmp(argv[i], "-a"))                  // option all
             header = sectHead = symtab = reloc = 1;
-        else if(!strcmp(argv[i], "-e"))
-            header = sectHead = 1;
-        else if(!strcmp(argv[i], "-h"))
-            header = 1;
-        else if(!strcmp(argv[i], "-S"))
+        else if(!strcmp(argv[i], "-e"))             // option headers
+            header = sectHead = 1;  
+        else if(!strcmp(argv[i], "-h"))             // option file header
+            header = 1; 
+        else if(!strcmp(argv[i], "-S"))             // option section headers
             sectHead = 1;
-        else if(!strcmp(argv[i], "-x")){
+        else if(!strcmp(argv[i], "-x")){            // option hex-dump
             i++;
             if (i == argc-1){
                 fprintf(stderr, "No section name is given!\n");
@@ -258,15 +291,16 @@ int elf_main(int argc, char ** argv){
             }
             section = 1;
         }
-        else if(!strcmp(argv[i], "-s"))
+        else if(!strcmp(argv[i], "-s"))             // option  symbol table
             symtab = 1;
-        else if(!strcmp(argv[i], "-r"))
+        else if(!strcmp(argv[i], "-r"))             // option relocation table
             reloc = 1;
         else{
             fprintf(stderr,"%s is not a valid option\n", argv[i]);
             goto exit;
         }
     }
+    // Allocates memory for filedata
     Filedata * filedata = NULL;
     filedata = calloc(1, sizeof *filedata);
     if (filedata == NULL){
@@ -274,14 +308,18 @@ int elf_main(int argc, char ** argv){
         return EXIT_FAILURE;
     }
     printf("%s\n", argv[argc-1]);
+    // Verify that data in file is obtained without error
     if (! get_filedata(argv[argc-1], filedata)){
         goto exit;
     }
+    // Verify that file data is processed without error
     if (! process_file(filedata)){
         goto exit;
     }
     free_filedata(filedata);
     return EXIT_SUCCESS;
+
+    // Failed to produce proper output
     exit:
         help();
         return EXIT_FAILURE;
