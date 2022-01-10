@@ -131,6 +131,8 @@ int main(int argc, char ** argv){
   //copy string table length
   newfile->string_table_length = filedata->string_table_length;
 
+  //newfile->file_header.e_shstrndx = newfile->file_header.e_shnum - 1;
+
   //allocate new section header table
   newfile->section_headers = malloc(sizeof(Elf32_Shdr) * new_sec_num);
 
@@ -139,6 +141,12 @@ int main(int argc, char ** argv){
   for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
     if(sec_hdr[i].sh_type != SHT_REL){
       memcpy(&(new_sec_hdr[j]), &(sec_hdr[i]), sizeof(Elf32_Shdr));
+      if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".text")==0){
+        new_sec_hdr[j].sh_addr = text_addr;
+      }
+      if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".data")==0){
+        new_sec_hdr[j].sh_addr = data_addr;
+      }
       j++;
     }
   }
