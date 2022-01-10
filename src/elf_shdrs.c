@@ -107,9 +107,9 @@ bool get_section_headers(Filedata *filedata){
             printf("Size is 0???\n");
     }
     // Verify that obtained values are valid
-    if (section->sh_link > num)
+    if (filedata->section_headers->sh_link > num)
 	    fprintf(stderr,"Section %u has an out of range sh_link value of %u\n", i, filedata->section_headers->sh_link);
-    if (section->sh_flags & SHF_INFO_LINK && section->sh_info > num)
+    if (filedata->section_headers->sh_flags & SHF_INFO_LINK && section->sh_info > num)
 	    fprintf(stderr,"Section %u has an out of range sh_info value of %u\n", i, filedata->section_headers->sh_info);
     free(shdrs);
     return true;
