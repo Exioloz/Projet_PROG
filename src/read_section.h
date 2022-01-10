@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "elf_header.h"
-#include "readelf.h"
+#include "elf_main.h"
 #include <elf.h>
 #include "elf_shdrs.h"
 #include <ctype.h>

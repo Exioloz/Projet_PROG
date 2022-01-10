@@ -1,4 +1,4 @@
-#include "readelf.h"
+#include "elf_main.h"
 
 #ifndef _ELF_SHDRS_
 #define _ELF_SHDRS_

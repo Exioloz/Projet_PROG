@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <elf.h>
 
-#ifndef _ELF_READ
-#define _ELF_READ
+#ifndef _ELF_MAIN_
+#define _ELF_MAIN_
 
 
 typedef struct{
@@ -78,5 +78,7 @@ bool process_file(Filedata *filedata);
 long int size_of_file(FILE * filename);
 
 void free_filedata(Filedata * filedata);
+
+int elf_main(int argc, char ** argv);
 
 #endif

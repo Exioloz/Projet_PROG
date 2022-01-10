@@ -202,6 +202,31 @@ bool process_symbol_table(Filedata * filedata){
     Elf32_Half number_sym = sym_tab.sym_tab_num;
     Elf32_Sym* symtable = sym_tab.sym_entries;
 
+    int size = filedata->section_headers[filedata->file_header.e_shstrndx].sh_size;
+    int offset = filedata->section_headers[filedata->file_header.e_shstrndx].sh_offset;
+
+    rewind(filedata->file);
+
+    fseek(filedata->file, offset, SEEK_SET);
+    char shstrtab[size];
+    char *temp = shstrtab;
+
+    size_t a = fread(shstrtab, size, 1, filedata->file);
+    if (0 == a) {
+        printf("\nfail to read\n");
+        return false;
+    }
+    int index_strtab = 0;
+    index_strtab = get_index_strtab(filedata, temp, index_strtab);
+    fseek(filedata->file, filedata->section_headers[index_strtab].sh_offset, SEEK_SET);
+    char strtab[filedata->section_headers[index_strtab].sh_size];
+    a = fread(strtab, filedata->section_headers[index_strtab].sh_size, 1, filedata->file);
+    if (0 == a) {
+        printf("\nfail to read\n");
+        return false;
+    }
+    char *strtemp = strtab;
+    
     printf("La table de symboles << .symtab >> contient %d entrees :\n", number_sym);
             printf("%7s  %-8s %s   %s      %s    %s          %s    %s\r\n",
            "Num:", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name");

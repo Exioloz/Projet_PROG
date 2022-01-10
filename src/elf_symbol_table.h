@@ -1,5 +1,5 @@
 #include "elf_header.h"
-#include "readelf.h"
+#include "elf_main.h"
 #include "elf_shdrs.h"
 #include <string.h>
 

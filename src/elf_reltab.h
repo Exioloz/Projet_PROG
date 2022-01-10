@@ -1,4 +1,4 @@
-#include "readelf.h"
+#include "elf_main.h"
 #include "elf_shdrs.h"
 #include "elf_symbol_table.h"
 

@@ -1,4 +1,4 @@
-#include "readelf.h"
+#include "elf_main.h"
 #include <elf.h>
 
 #ifndef _FILE_HEADER_
