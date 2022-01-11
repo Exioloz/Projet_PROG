@@ -6,13 +6,20 @@
 #include "read_section.h"
 #include <string.h>
 
-//help message
+/*
+Function: help message
+  Prints a help message in case of error
+*/
 void reloc_help_msg(){
   printf("\nUsage: ./readelf .text=<starting-address> .data=<starting-address> <elf-file>\n");
   printf(".text and .data have to be in order and both have to be there \n");
   printf("starting address is a 32-bit hexadecimal value with 0x prefix \n");
 }
 
+/*
+Function: Get text address
+  
+*/
 void get_text_addr(char *arg, Elf32_Addr *addr){
   char val[11];
   //printf("arg = %s\n", arg);
@@ -38,6 +45,10 @@ void get_text_addr(char *arg, Elf32_Addr *addr){
   }
 }
 
+/*
+Function: Get Data Address
+
+*/
 void get_data_addr(char *arg, Elf32_Addr *addr){
   char val[11];
   //printf("arg = %s\n", arg);
@@ -62,6 +73,18 @@ void get_data_addr(char *arg, Elf32_Addr *addr){
     exit(1);
   }
 }
+
+void copy_file(Filedata * original, Filedata * new){
+  char buffer[8000];
+  new->file_name = "phase2";
+  if ((new->file=fopen(new->file_name, "wb"))==NULL){
+    fprintf(stderr, "Cannot open file\n");
+    return;
+  }
+  fwrite(buffer, sizeof(buffer), 1, new->file);
+  
+}
+
 
 /*================================================================
     MAIN FUNCTION
@@ -107,6 +130,9 @@ int main(int argc, char ** argv){
       return EXIT_FAILURE;
   }
 
+  // Copy file into newfile->file
+  copy_file(filedata, newfile);
+
   //RELOCATION TO DO
   //i'm still thinking for this part haha
   //if you have any concrete ideas, please feel free to implement them here
@@ -138,20 +164,51 @@ int main(int argc, char ** argv){
 
   Elf32_Shdr* new_sec_hdr = newfile->section_headers;
   Elf32_Shdr* sec_hdr = filedata->section_headers;
+  
+  //allocate temp new string table
+  char *temp_strtab = malloc(sizeof(filedata->string_table));
+
+  int strsize ;
+  int tabsize = 0;
+  Elf32_Word strndx = 0 ;
   for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
     if(sec_hdr[i].sh_type != SHT_REL){
-      memcpy(&(new_sec_hdr[j]), &(sec_hdr[i]), sizeof(Elf32_Shdr));
-      if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".text")==0){
+      //memcpy(&(new_sec_hdr[j].sh_name), &(sec_hdr[i].sh_name), sizeof(Elf32_Shdr));
+      new_sec_hdr[j].sh_name = sec_hdr[i].sh_name;
+      new_sec_hdr[j].sh_addr = sec_hdr[i].sh_addr ;
+      new_sec_hdr[j].sh_addralign = sec_hdr[i].sh_addralign ;
+      new_sec_hdr[j].sh_entsize = sec_hdr[i].sh_entsize ;
+      new_sec_hdr[j].sh_flags = sec_hdr[i].sh_flags ;
+      
+      new_sec_hdr[j].sh_info = sec_hdr[i].sh_info ;
+      new_sec_hdr[j].sh_offset = sec_hdr[i].sh_offset ;
+      new_sec_hdr[j].sh_link = sec_hdr[i].sh_link ;
+      new_sec_hdr[j].sh_size = sec_hdr[i].sh_size ;
+      new_sec_hdr[j].sh_type = sec_hdr[i].sh_type ;
+      //new_sec_hdr[j].sh_name = strndx ;
+          
+      printf("strndx of %d : %d\n", j, strndx);
+      //new_sec_hdr[j].sh_name = (Elf32_Word) strndx ;
+      strsize = strlen(get_section_name(filedata, sec_hdr[i].sh_name)) + 1;
+      //printf("strsize of %d : %d\n", j, strsize);
+      strcpy(&temp_strtab[strndx], get_section_name(filedata, sec_hdr[i].sh_name));
+      printf("Name : %s\n", &temp_strtab[strndx]);
+      tabsize += strsize;
+      //temp_strtab += strlen(get_section_name(filedata, sec_hdr[i].sh_name));
+      strndx += strlen(get_section_name(filedata, sec_hdr[i].sh_name)) ;
+      temp_strtab[strndx] = '\0';
+      strndx += 1;
+      if(strcmp(get_section_name(filedata, sec_hdr[i].sh_name),".text")==0){
         new_sec_hdr[j].sh_addr = text_addr;
       }
-      if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".data")==0){
+      if(strcmp(get_section_name(filedata, sec_hdr[i].sh_name),".data")==0){
         new_sec_hdr[j].sh_addr = data_addr;
       }
       j++;
     }
   }
 
-  process_file_header(newfile);
+  //process_file_header(newfile);
   process_section_headers(newfile);
 
   free_filedata(filedata);
