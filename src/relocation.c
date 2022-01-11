@@ -22,7 +22,6 @@ Function: Get text address
 */
 void get_text_addr(char *arg, Elf32_Addr *addr){
   char val[11];
-  //printf("arg = %s\n", arg);
   if(arg[0] == '.' && arg[5] == '='){
     arg[5] = '\0'; //split argument into two parts
     if(strlen(&arg[6]) > 10){
@@ -51,7 +50,6 @@ Function: Get Data Address
 */
 void get_data_addr(char *arg, Elf32_Addr *addr){
   char val[11];
-  //printf("arg = %s\n", arg);
   if(arg[0] == '.' && arg[5] == '='){
     arg[5] = '\0'; //split argument into two parts
     if(strlen(&arg[6]) > 10){
@@ -74,8 +72,8 @@ void get_data_addr(char *arg, Elf32_Addr *addr){
   }
 }
 
+//changes endianness of the bytes in the file header
 void change_header_endian(Filedata *filedata){
-    // Transform the obtained data using big endian and store into file_header
     Elf32_Ehdr *head = &filedata->file_header;
     head->e_type            = change_endian_16(head->e_type);             
     head->e_machine         = change_endian_16(head->e_machine);       
@@ -92,6 +90,7 @@ void change_header_endian(Filedata *filedata){
     head->e_shstrndx        = change_endian_16(head->e_shstrndx);     
 }
 
+//changes endianness of bytes in the section headers
 void change_section_endian(Filedata *filedata){
   int i;
   Elf32_Shdr* sec_hdr = filedata->section_headers;
@@ -140,11 +139,15 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
     exit(1);
   }
 
+  //conversion table for symbol section index
+  Elf32_Section new_stndx[sec_num];
 
   Elf32_Shdr* new_sec_hdr = newfile->section_headers;
   Elf32_Shdr* sec_hdr = filedata->section_headers;
   for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
+    new_stndx[i] = 0 ;
     if(sec_hdr[i].sh_type != SHT_REL){
+      new_stndx[i] = (Elf32_Section) j ;
       new_sec_hdr[j].sh_addralign = sec_hdr[i].sh_addralign ;
       new_sec_hdr[j].sh_entsize = sec_hdr[i].sh_entsize ;
       new_sec_hdr[j].sh_flags = sec_hdr[i].sh_flags ;
@@ -183,6 +186,25 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   //change start of section headers in file header
   newfile->file_header.e_shoff = sec_off ;
 
+  //symbol index correction
+  Elf32_Sym_Tab *old_sym_tab = &filedata->symbol_table; //old symbol table
+  Elf32_Sym_Tab *new_sym_tab = &newfile->symbol_table; //new symbol table
+  new_sym_tab->sym_tab_num = old_sym_tab->sym_tab_num ; //number of symbols
+  new_sym_tab->sym_entries = malloc(sizeof(Elf32_Sym)*old_sym_tab->sym_tab_num); //allocate new symbol table
+  memcpy(new_sym_tab->sym_entries, old_sym_tab->sym_entries, sizeof(Elf32_Sym)*old_sym_tab->sym_tab_num); //copy actual symbol table
+
+  Elf32_Section ndx ;
+  Elf32_Sym * sym_ents = new_sym_tab->sym_entries ;
+  for(i=0 ; i < new_sym_tab->sym_tab_num ; i++){
+    ndx = new_stndx[change_endian_16(sym_ents[i].st_shndx)] ;
+    sym_ents[i].st_shndx = (Elf32_Section) change_endian_16(ndx);
+  }
+  
+
+  /*
+  GENERATE NEW BINARY FILE
+  */
+
   //change endianness
   change_header_endian(newfile);
 
@@ -201,7 +223,18 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
 
   //copy sections to new file
   for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
-    if(sec_hdr[i].sh_type != SHT_REL){
+    if(sec_hdr[i].sh_type == SHT_SYMTAB){
+      if(fseek(newfile->file, new_sec_hdr[j].sh_offset, SEEK_SET) != 0) {
+        fprintf(stderr, "Failed to seek section (write).\n");
+        exit(1);
+      }
+      if(fwrite(new_sym_tab->sym_entries, sizeof(Elf32_Sym), new_sym_tab->sym_tab_num, newfile->file) != new_sym_tab->sym_tab_num){
+        fprintf(stderr, "Failed to write section.\n");
+        exit(1);
+      }
+      j++;
+    }
+    else if(sec_hdr[i].sh_type != SHT_REL && sec_hdr[i].sh_type != SHT_SYMTAB){
       rewind(filedata->file);
       if(fseek(filedata->file, sec_hdr[i].sh_offset, SEEK_SET) != 0) {
         fprintf(stderr, "Failed to seek section (read).\n");
@@ -305,6 +338,7 @@ int main(int argc, char ** argv){
   
   process_file_header(newfile);
   process_section_headers(newfile);
+  process_symbol_table(newfile);
 
   free_filedata(filedata);
 
