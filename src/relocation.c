@@ -63,6 +63,177 @@ void get_data_addr(char *arg, Elf32_Addr *addr){
   }
 }
 
+void change_header_endian(Filedata *filedata){
+    // Transform the obtained data using big endian and store into file_header
+    Elf32_Ehdr *head = &filedata->file_header;
+    head->e_type            = change_endian_16(head->e_type);             
+    head->e_machine         = change_endian_16(head->e_machine);       
+    head->e_version         = change_endian_32(head->e_version);      
+    head->e_entry           = change_endian_32(head->e_entry);           
+    head->e_phoff           = change_endian_32(head->e_phoff);           
+    head->e_shoff           = change_endian_32(head->e_shoff);           
+    head->e_flags           = change_endian_32(head->e_flags);           
+    head->e_ehsize          = change_endian_16(head->e_ehsize);        
+    head->e_phentsize       = change_endian_16(head->e_phentsize);   
+    head->e_phnum           = change_endian_16(head->e_phnum);           
+    head->e_shentsize       = change_endian_16(head->e_shentsize);   
+    head->e_shnum           = change_endian_16(head->e_shnum);           
+    head->e_shstrndx        = change_endian_16(head->e_shstrndx);     
+}
+
+void change_section_endian(Filedata *filedata){
+  int i;
+  Elf32_Shdr* sec_hdr = filedata->section_headers;
+  for(i=0 ; i < filedata->file_header.e_shnum ; i++){
+    sec_hdr[i].sh_addralign = change_endian_32(sec_hdr[i].sh_addralign) ;
+    sec_hdr[i].sh_entsize = change_endian_32(sec_hdr[i].sh_entsize) ;
+    sec_hdr[i].sh_flags = change_endian_32(sec_hdr[i].sh_flags) ;
+    sec_hdr[i].sh_info = change_endian_32(sec_hdr[i].sh_info) ;
+    sec_hdr[i].sh_link = change_endian_32(sec_hdr[i].sh_link) ;
+    sec_hdr[i].sh_size = change_endian_32(sec_hdr[i].sh_size) ;
+    sec_hdr[i].sh_type = change_endian_32(sec_hdr[i].sh_type) ;
+    sec_hdr[i].sh_name = change_endian_32(sec_hdr[i].sh_name) ;
+    sec_hdr[i].sh_offset = change_endian_32(sec_hdr[i].sh_offset);
+    sec_hdr[i].sh_addr = change_endian_32(sec_hdr[i].sh_addr) ;
+  }
+}
+
+void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr, Elf32_Addr data_addr){
+  int i,j;
+  int sec_num = filedata->file_header.e_shnum ; //number of sections
+  Elf32_Rel_Tab rel_tab = filedata->reloc_table; //relocation tables
+  int rel_sec_num = rel_tab.rel_num; //number of relocation sections
+  int new_sec_num = sec_num - rel_sec_num ; //new number of sections
+
+  int sec_off = 0 ; //offset of new file
+
+  //copy file header
+  memcpy(&(newfile->file_header), &(filedata->file_header), sizeof(Elf32_Ehdr));
+  newfile->file_header.e_shnum = new_sec_num; //put new num of sections
+  //string table index should be changed but not sure how
+  //copy string table
+  memcpy(&(newfile->string_table), &(filedata->string_table), sizeof(filedata->string_table));
+  //copy string table length
+  newfile->string_table_length = filedata->string_table_length;
+
+  newfile->file_header.e_shstrndx = newfile->file_header.e_shnum - 1;
+  
+  sec_off += newfile->file_header.e_ehsize ;
+
+  //allocate new section header table
+  newfile->section_headers = malloc(sizeof(Elf32_Shdr) * new_sec_num);
+  //section content
+  char *content_buffer = malloc(0x1000);
+  if(content_buffer == NULL){
+    fprintf(stderr, "Failed to allocate memory for buffer.\n");
+    exit(1);
+  }
+
+
+  Elf32_Shdr* new_sec_hdr = newfile->section_headers;
+  Elf32_Shdr* sec_hdr = filedata->section_headers;
+  for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
+    if(sec_hdr[i].sh_type != SHT_REL){
+      new_sec_hdr[j].sh_addralign = sec_hdr[i].sh_addralign ;
+      new_sec_hdr[j].sh_entsize = sec_hdr[i].sh_entsize ;
+      new_sec_hdr[j].sh_flags = sec_hdr[i].sh_flags ;
+      new_sec_hdr[j].sh_info = sec_hdr[i].sh_info ;
+      if(sec_hdr[i].sh_type == SHT_SYMTAB){
+        new_sec_hdr[j].sh_link = j+1 ;
+      }
+      else{
+        new_sec_hdr[j].sh_link = sec_hdr[i].sh_link ;
+      }
+      new_sec_hdr[j].sh_size = sec_hdr[i].sh_size ;
+      new_sec_hdr[j].sh_type = sec_hdr[i].sh_type ;
+      new_sec_hdr[j].sh_name = sec_hdr[i].sh_name ;
+
+      if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".text")==0){
+        new_sec_hdr[j].sh_addr = text_addr;
+      }
+      else if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".data")==0){
+        new_sec_hdr[j].sh_addr = data_addr;
+      }
+      else{
+        new_sec_hdr[j].sh_addr = sec_hdr[i].sh_addr;
+      }
+
+      if(sec_hdr[i].sh_type == SHT_NULL){
+        new_sec_hdr[j].sh_offset = 0x0 ;
+      }
+      else{
+        new_sec_hdr[j].sh_offset = sec_off ;
+      }
+      sec_off += sec_hdr[i].sh_size ;
+      j++;
+    }
+  }
+
+  //change start of section headers in file header
+  newfile->file_header.e_shoff = sec_off ;
+
+  //change endianness
+  change_header_endian(newfile);
+
+  //copy header to new file
+  if(fseek(newfile->file, 0, SEEK_SET) != 0) {
+    fprintf(stderr, "Failed to seek header.\n");
+    exit(1);
+  }
+  if(fwrite(&newfile->file_header, sizeof(newfile->file_header), 1, newfile->file) != 1){
+    fprintf(stderr, "Failed to write header.\n");
+    exit(1);
+  }
+
+  //re-change endianness
+  change_header_endian(newfile);
+
+  //copy sections to new file
+  for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
+    if(sec_hdr[i].sh_type != SHT_REL){
+      rewind(filedata->file);
+      if(fseek(filedata->file, sec_hdr[i].sh_offset, SEEK_SET) != 0) {
+        fprintf(stderr, "Failed to seek section (read).\n");
+        exit(1);
+      }
+      if(fread(content_buffer, 1, sec_hdr[i].sh_size, filedata->file) != sec_hdr[i].sh_size){
+        fprintf(stderr, "Failed to read section.\n");
+        exit(1);
+      }
+
+      if(fseek(newfile->file, new_sec_hdr[j].sh_offset, SEEK_SET) != 0) {
+        fprintf(stderr, "Failed to seek section (write).\n");
+        exit(1);
+      }
+      if(fwrite(content_buffer, 1, sec_hdr[i].sh_size, newfile->file) != sec_hdr[i].sh_size){
+        fprintf(stderr, "Failed to write section.\n");
+        exit(1);
+      }
+      j++;
+    }
+  }
+
+  //change section header endianness
+  change_section_endian(newfile);
+
+  //copy section header table to new file
+  if(fseek(newfile->file, sec_off, SEEK_SET) != 0) {
+    fprintf(stderr, "Failed to seek section (write).\n");
+    exit(1);
+  }
+  if(fwrite(newfile->section_headers, newfile->file_header.e_shentsize, newfile->file_header.e_shnum, newfile->file) != newfile->file_header.e_shnum){
+    fprintf(stderr, "Failed to write section.\n");
+    exit(1);
+  }
+
+  //re-change section header endianness
+  change_section_endian(newfile);
+
+  free(content_buffer);
+
+}
+
+
 /*================================================================
     MAIN FUNCTION
   ================================================================*/
@@ -107,49 +278,18 @@ int main(int argc, char ** argv){
       return EXIT_FAILURE;
   }
 
+  newfile->file = fopen("out.bin", "wb+");
+  if (newfile->file == NULL){
+      fprintf(stderr, "Failed to open output file.\n");
+      return EXIT_FAILURE;
+  }
+
   //RELOCATION TO DO
   //i'm still thinking for this part haha
   //if you have any concrete ideas, please feel free to implement them here
-  int i,j;
 
-  //actual relocation here
-
-
-  //after relocation
   //removing the relocation sections
-  int sec_num = filedata->file_header.e_shnum ; //number of sections
-  Elf32_Rel_Tab rel_tab = filedata->reloc_table; //relocation tables
-  int rel_sec_num = rel_tab.rel_num; //number of relocation sections
-  int new_sec_num = sec_num - rel_sec_num ; //new number of sections
-
-  //copy file header
-  memcpy(&(newfile->file_header), &(filedata->file_header), sizeof(Elf32_Ehdr));
-  newfile->file_header.e_shnum = new_sec_num; //put new num of sections
-  //string table index should be changed but not sure how
-  //copy string table
-  memcpy(&(newfile->string_table), &(filedata->string_table), sizeof(filedata->string_table));
-  //copy string table length
-  newfile->string_table_length = filedata->string_table_length;
-
-  //newfile->file_header.e_shstrndx = newfile->file_header.e_shnum - 1;
-
-  //allocate new section header table
-  newfile->section_headers = malloc(sizeof(Elf32_Shdr) * new_sec_num);
-
-  Elf32_Shdr* new_sec_hdr = newfile->section_headers;
-  Elf32_Shdr* sec_hdr = filedata->section_headers;
-  for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
-    if(sec_hdr[i].sh_type != SHT_REL){
-      memcpy(&(new_sec_hdr[j]), &(sec_hdr[i]), sizeof(Elf32_Shdr));
-      if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".text")==0){
-        new_sec_hdr[j].sh_addr = text_addr;
-      }
-      if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".data")==0){
-        new_sec_hdr[j].sh_addr = data_addr;
-      }
-      j++;
-    }
-  }
+  renumerotation(filedata, newfile, text_addr, data_addr);
 
   process_file_header(newfile);
   process_section_headers(newfile);
