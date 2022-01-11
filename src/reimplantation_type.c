@@ -25,6 +25,7 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr, Filedata * filedata
             case R_ARM_ABS16:
             case R_ARM_ABS8: //S
                 idx = ELF32_R_SYM(change_endian_32(ext_tab[index].rel_ents[i].r_info));
+                printf("nom:%s\n",get_section_name(filedata, filedata->section_headers[change_endian_16(symtable[idx].st_shndx)].sh_name));
                 val_symbol=(uint32_t)get_st_value(symtable, idx);
                 *addr_p = *addr;
                 *addr_p=*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
@@ -34,15 +35,17 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr, Filedata * filedata
             case R_ARM_CALL:
             case R_ARM_JUMP24: //S - P
                 idx = ELF32_R_SYM(change_endian_32(ext_tab[index].rel_ents[i].r_info));
+                printf("nom:%s\n",get_section_name(filedata, filedata->section_headers[change_endian_16(symtable[idx].st_shndx)].sh_name));
                 val_symbol=get_st_value(symtable, idx);
                 *addr_p = *addr;
                 val_symbol=val_symbol-(*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset));
-                *addr_p=*addr+change_endian_32(ext_tab[index].rel_sh_offset);
+                *addr_p=*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
                 replace_data(filedata,val_symbol, addr_p, newfile);
                 free(addr_p);
                 break;
             default:
                 break;
+
         }
     }
 
@@ -53,20 +56,14 @@ void replace_data(Filedata * filedata, uint32_t val_symbol, Elf32_Addr * addr_p,
     printf("\nVal:%x\n",val_symbol);
     printf("\nAddr_p:%x\n",*addr_p);
 
-    //  char * file_name="2";
-    //  newfile->file = fopen(file_name, "rb+");
     if (newfile->file == NULL){
         fprintf(stderr,"Input file %s is not readble.\n", newfile->file_name);
         free_filedata(newfile);
     }
-    rewind(newfile->file);
+    //  rewind(newfile->file);
     a = fseek(newfile->file,*addr_p,SEEK_SET);
-    //  a = fseek(newfile->file, 0x20, SEEK_SET);
 
-    char * str = "hello world";
-    //  val_symbol=1234;
-    //  a = fwrite( &val_symbol, sizeof(val_symbol) , 1, newfile->file);
-    a = fwrite( str, sizeof(uint32_t) , 1, newfile->file);
+    a = fwrite( &val_symbol, sizeof(uint32_t) , 1, newfile->file);
     if (0 == a) {
         printf("\nfail to write\n");
     }
