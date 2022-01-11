@@ -231,7 +231,7 @@ bool process_symbol_table(Filedata * filedata){
             printf("%7s  %-8s %s   %s      %s    %s          %s    %s\r\n",
            "Num:", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name");
     for (int i=0; i<number_sym; i++) {
-        printf("%6d:  %08x  %-6u", i, get_st_value(symtable, i), get_st_size(symtable, i));
+        printf("%6d:  %08x  %-6u", i, change_endian_32(get_st_value(symtable, i)), get_st_size(symtable, i));
 
         printf("%-8s ", get_st_type(symtable,i));
         printf(" %-8s", get_st_bind(symtable,i));
