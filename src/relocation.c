@@ -6,13 +6,20 @@
 #include "read_section.h"
 #include <string.h>
 
-//help message
+/*
+Function: help message
+  Prints a help message in case of error
+*/
 void reloc_help_msg(){
   printf("\nUsage: ./readelf .text=<starting-address> .data=<starting-address> <elf-file>\n");
   printf(".text and .data have to be in order and both have to be there \n");
   printf("starting address is a 32-bit hexadecimal value with 0x prefix \n");
 }
 
+/*
+Function: Get text address
+  
+*/
 void get_text_addr(char *arg, Elf32_Addr *addr){
   char val[11];
   //printf("arg = %s\n", arg);
@@ -38,6 +45,10 @@ void get_text_addr(char *arg, Elf32_Addr *addr){
   }
 }
 
+/*
+Function: Get Data Address
+
+*/
 void get_data_addr(char *arg, Elf32_Addr *addr){
   char val[11];
   //printf("arg = %s\n", arg);
@@ -289,12 +300,13 @@ int main(int argc, char ** argv){
   //if you have any concrete ideas, please feel free to implement them here
 
   //removing the relocation sections
-  renumerotation(filedata, newfile, text_addr, data_addr);
 
+  renumerotation(filedata, newfile, text_addr, data_addr);
+  
   process_file_header(newfile);
   process_section_headers(newfile);
 
   free_filedata(filedata);
-  
+
   return EXIT_SUCCESS;
 }
