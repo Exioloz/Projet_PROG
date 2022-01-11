@@ -1,0 +1,66 @@
+\documentclass[a4paper]{article} %type of paper
+
+\usepackage[french]{babel} %paper language
+\usepackage[utf8]{inputenc} %input language
+\usepackage[T1]{fontenc} %fonts
+\usepackage{amsmath} %insert advanced math
+\usepackage{amssymb} %insert math symbols
+\usepackage[hidelinks]{hyperref} %insert hyperlinks
+\usepackage{graphicx} %insert images
+\usepackage{listings} %insert code
+\usepackage{soul} %underlines(ul)/barrer(st)
+\usepackage{xcolor} %use new colors
+
+% color for code
+\definecolor{backColor}{HTML}{fdfdfd}
+\definecolor{commentsColor}{HTML}{008000}
+\definecolor{keywordsColor}{HTML}{1e7fe8}
+\definecolor{numberColor}{HTML}{898989}
+\definecolor{stringColor}{HTML}{bd4bb0}
+
+% title
+\title{PROG 5 Projet 2021-2022 \\
+\large Fonctionnalités Implémentées et Manquantes}
+% Author
+\author{Kimberly Beauvais, Xuan Li, Akira Tobing \\
+Hugo Roger}
+
+
+\lstdefinestyle{mystyle}{
+    language=C,
+    frame=single,
+    backgroundcolor=\color{backColor},   
+    commentstyle=\color{commentsColor},
+    keywordstyle=\color{keywordsColor}\bfseries,
+    numberstyle=\tiny\color{numberColor},
+    stringstyle=\color{stringColor},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=10pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\begin{document}
+
+% title 
+\maketitle
+\begin{center}
+\rule{\textwidth}{1pt}
+\end{center}
+
+% table of contents
+\renewcommand{\contentsname}{Table des Matières}
+\tableofcontents
+
+\newpage
+
+\end{document}
