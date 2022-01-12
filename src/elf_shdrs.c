@@ -259,7 +259,7 @@ bool process_section_headers(Filedata * filedata){
     printf("Key to Flags:\n\
     W (write), A (alloc), X (execute), M (merge), S (strings), I (info),\n\
     L (link order), O (extra OS processing required), G (group), T (TLS),\n\
-    C (compressed), x (unknown), o (OS specific), E (exclude),  \n    ");
+    C (compressed), x (unknown), o (OS specific), E (exclude),\n    ");
     
     if (filedata->file_header.e_machine == EM_X86_64
         || filedata->file_header.e_machine == EM_L10M
