@@ -190,18 +190,22 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   memcpy(new_sym_tab->sym_entries, old_sym_tab->sym_entries, sizeof(Elf32_Sym)*old_sym_tab->sym_tab_num); //copy actual symbol table
 
   Elf32_Section ndx ;
+  Elf32_Addr newval ;
   Elf32_Sym * sym_ents = new_sym_tab->sym_entries ;
   for(i=0 ; i < new_sym_tab->sym_tab_num ; i++){
     ndx = new_stndx[change_endian_16(sym_ents[i].st_shndx)] ;
     sym_ents[i].st_shndx = (Elf32_Section) change_endian_16(ndx);
+    newval = new_sec_hdr[ndx].sh_addr + change_endian_32(sym_ents[i].st_value);
+    sym_ents[i].st_value = change_endian_32(newval);
   }
 
 }
 
-void write_file(Filedata *filedata, Filedata *newfile){
-  /*
+/*
   GENERATE NEW BINARY FILE
   */
+void write_file(Filedata *filedata, Filedata *newfile){
+  
 
   //counters
   int i,j ;
