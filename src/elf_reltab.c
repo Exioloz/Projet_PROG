@@ -285,9 +285,9 @@ bool process_rel_table(Filedata *filedata){
         for(j = 0 ; j < ents->rel_ent_num ; j++){
           printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_offset)); //print offset
           printf("%8.8x  ", change_endian_32(ents->rel_ents[j].r_info)); //print info
-          printf("%s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info)))); //print type
+          printf("%-12s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info)))); //print type
           idx = ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info)); //gets index of symbol in symbol table
-          printf("%8.8x  ", get_st_value(symtab, idx)); //print sym value
+          printf("%8.8x  ", change_endian_32(get_st_value(symtab, idx))); //print sym value
           printf("%s     ", get_section_name(filedata, sections[change_endian_16(symtab[idx].st_shndx)].sh_name)); //print sym name
           printf("\n");
         }
