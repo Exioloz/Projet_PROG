@@ -115,7 +115,6 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   int rel_sec_num = rel_tab.rel_num; //number of relocation sections
   int new_sec_num = sec_num - rel_sec_num ; //new number of sections
 
-  int sec_off = 0 ; //offset of new file
 
   //copy file header
   memcpy(&(newfile->file_header), &(filedata->file_header), sizeof(Elf32_Ehdr));
@@ -128,7 +127,7 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
 
   newfile->file_header.e_shstrndx = newfile->file_header.e_shnum - 1;
   
-  sec_off += newfile->file_header.e_ehsize ;
+  //sec_off += newfile->file_header.e_ehsize ;
 
   //allocate new section header table
   newfile->section_headers = malloc(sizeof(Elf32_Shdr) * new_sec_num);
@@ -169,16 +168,18 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
       if(sec_hdr[i].sh_type == SHT_NULL){
         new_sec_hdr[j].sh_offset = 0x0 ;
       }
-      else{
-        new_sec_hdr[j].sh_offset = new_sec_hdr[j].sh_addr + sec_off ;
+      else if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".text")==0){
+        new_sec_hdr[j].sh_offset = text_addr + sec_hdr[i].sh_offset ;
       }
-      sec_off = new_sec_hdr[j].sh_offset + new_sec_hdr[j].sh_size ;
+      else{
+        new_sec_hdr[j].sh_offset = data_addr + sec_hdr[i].sh_offset ;
+      }
       j++;
     }
   }
 
   //change start of section headers in file header
-  newfile->file_header.e_shoff = sec_off ;
+  newfile->file_header.e_shoff = new_sec_hdr[new_sec_num-1].sh_offset + new_sec_hdr[new_sec_num-1].sh_size ;
   //change file type to executable
   newfile->file_header.e_type = ET_EXEC ;
 
@@ -214,7 +215,7 @@ void write_file(Filedata *filedata, Filedata *newfile){
   int new_sec_num = newfile->file_header.e_shnum ; //new number of sections
   Elf32_Shdr* sec_hdr = filedata->section_headers; //old section headers
   Elf32_Shdr* new_sec_hdr = newfile->section_headers; //new section headers
-  int sh_sec_off = new_sec_hdr[new_sec_num-1].sh_offset + new_sec_hdr[new_sec_num-1].sh_size; //offset of shdr table
+  int sh_sec_off = newfile->file_header.e_shoff; //offset of shdr table
   
 
   //section content
