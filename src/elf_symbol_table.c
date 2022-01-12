@@ -227,8 +227,8 @@ bool process_symbol_table(Filedata * filedata){
     }
     char *strtemp = strtab;
     
-    printf("La table de symboles << .symtab >> contient %d entrees :\n", number_sym);
-            printf("%7s  %-8s %s   %s      %s    %s          %s    %s\r\n",
+    printf("Symbol table '.symtab' contains 15 entries:\n", number_sym);
+            printf("%7s  %-8s %s   %s      %s    %s          %s    %s\n",
            "Num:", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name");
     for (int i=0; i<number_sym; i++) {
         printf("%6d:  %08x  %-6u", i, change_endian_32(get_st_value(symtable, i)), get_st_size(symtable, i));
@@ -251,7 +251,7 @@ bool process_symbol_table(Filedata * filedata){
 
         }
         strtemp=strtab;
-        printf("%s\r\n", get_st_name(symtable, i, strtemp));
+        printf("%s\n", get_st_name(symtable, i, strtemp));
 
     }
     return true;
