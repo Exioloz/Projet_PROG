@@ -24,7 +24,7 @@
         <li><a href="#phase-1-readelf">Phase 1</a></li>
         <li><a href="#phase-2">Phase 2</a></li>
       </ul>
-    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#testes">Testes</a></li>
   </ol>
 </details>
 
@@ -42,8 +42,8 @@ make
 ## Execution
 
 Le projet est divisé en deux phases. La <a href="#phase-1">première phase</a> contient les fonctions utilisées pour obtenir les informations dans un fichier ELF. 
-
-**TODO** Part 2 
+La <a href="#phase-2">deuxiéme phase</a> contient les fonctions utilisées pour 
+modifier le contenu du fichier au format ELF donné afin d'effectuer l'implantation.
 
 ### Phase 1
 L'objectif de la première phase consiste a recréer certaines fonctionnalités de readelf décrites ci-dessous. Le programme principal est écrit dans le fichier **readelf.c**. 
@@ -112,10 +112,11 @@ L'objectif de la deuxiéme phase est de modifier le contenu du fichier au format
 d'effectuer l'implantation. Le programme prendr en paramètre les adresses auxquelles les sections 
 du programme (.text et .data) doivent être chargées. 
 
-Pour éxécuter le programme, il faut utiliser :
-```
-./relocation .text=0x** .data=0x**** elffile
-```
+Usage :
+`
+./relocation .text=0x**** .data=0x**** elf-file
+`
+
 Où ** est remplacé par les adresses auxquelles les sections du programme (.text et .data) doivent être chargées. 
 
 Par exemple :
@@ -125,3 +126,11 @@ Par exemple :
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Testes
+
+Pour tester les étapes de phase 1 automaituqement, nous avons crée un programme qui éxécute tout les fichiers testes sur notre programme et produire un fichier de résultat nommé `resultat_tests.txt`.
+
+Usage :
+`./tests_part1.sh`
+
+<p align="right">(<a href="#top">back to top</a>)</p>
