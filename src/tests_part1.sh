@@ -52,9 +52,6 @@ do
 		readelf -x $line $test 2> /dev/null | sed '1,2d' | head -n -2 > .original
 		./readelf -x $line $test 2> /dev/null | sed '1,3d' | head -n -2 | tail -n +2 > .custom
 
-		sed -i 's/. ./.../g' .original
-		sed -i 's/.-./.../g' .original
-
 		sed -i -e '/Usage:/,+11d' .custom
 
 		if diff .original .custom > .temp_res
