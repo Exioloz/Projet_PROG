@@ -227,7 +227,7 @@ bool process_symbol_table(Filedata * filedata){
     }
     char *strtemp = strtab;
     
-    printf("Symbol table '.symtab' contains 15 entries:\n", number_sym);
+    printf("Symbol table '.symtab' contains %d entries:\n", number_sym);
             printf("%7s  %-8s %s   %s      %s    %s          %s    %s\n",
            "Num:", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name");
     for (int i=0; i<number_sym; i++) {
