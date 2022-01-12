@@ -44,8 +44,8 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr,Elf32_Off offset_sec
                 printf("idx:%d\n",idx);
                 val_symbol=(uint32_t)change_endian_32(get_st_value(new_sym_tab, idx));
                 //      *addr_p = *addr;
-                val_symbol=val_symbol-(*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset));
-                val_symbol=change_endian_32(val_symbol & 0x03FFFFFE);
+                val_symbol=(val_symbol-(*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset)));
+                val_symbol=change_endian_32(((uint16_t)val_symbol & 0x03FFFFFE)>>2);
 
                 *addr_p=offset_sec+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
                 printf("Ofset:%d\n",change_endian_32(ext_tab[index].rel_ents[i].r_offset));
@@ -59,6 +59,8 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr,Elf32_Off offset_sec
     }
 
 }
+
+
 
 void replace_data(Filedata * filedata, uint32_t val_symbol, Elf32_Addr * addr_p, Filedata * newfile){
     int a = 0;
