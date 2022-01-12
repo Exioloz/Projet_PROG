@@ -5,7 +5,7 @@
   <h1 align="center">PROG 5 Projet 2021-2022</h1>
 
   <p align="center">
-    Réalisation d'un éditeur de liens - Phase de réimplémentation
+    Réalisation d'un éditeur de liens - Phase de réimplantation
     <br />
     <a href="https://github.com/Exioloz/Projet_PROG"><strong>Source code »</strong></a>
     <br />
@@ -21,10 +21,10 @@
     <li><a href="#compilation">Compilation</a>
     <li><a href="#execution">Exécution</a>
       <ul>
-        <li><a href="#partie-1-readelf">Partie 1</a></li>
-        <li><a href="#partie-2">Partie 2</a></li>
+        <li><a href="#phase-1-readelf">Phase 1</a></li>
+        <li><a href="#phase-2">Phase 2</a></li>
       </ul>
-    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#testes">Testes</a></li>
   </ol>
 </details>
 
@@ -41,12 +41,12 @@ make
 <!-- Execution -->
 ## Execution
 
-Le projet est divisé en deux parties. La <a href="#partie-1">première partie</a> contient les fonctions utilisées pour obtenir les informations dans un fichier ELF. 
+Le projet est divisé en deux phases. La <a href="#phase-1">première phase</a> contient les fonctions utilisées pour obtenir les informations dans un fichier ELF. 
+La <a href="#phase-2">deuxiéme phase</a> contient les fonctions utilisées pour 
+modifier le contenu du fichier au format ELF donné afin d'effectuer l'implantation.
 
-**TODO** Part 2 
-
-### Partie 1
-L'objectif de la première partie est de recréer certaines fonctionnalités de readelf décrites ci-dessous. Le programme principal est écrit dans le fichier **readelf.c**. 
+### Phase 1
+L'objectif de la première phase consiste a recréer certaines fonctionnalités de readelf décrites ci-dessous. Le programme principal est écrit dans le fichier **readelf.c**. 
 
 Nous avons également implémenté des options comme dans readelf afin de mieux visualiser les données en fonction de nos besoins. Afin de visualiser les <a href="#options">options</a> possibles, il suffit d'entrer :
     `
@@ -57,9 +57,9 @@ Nous avons également implémenté des options comme dans readelf afin de mieux 
     
     ./readelf -h -S Examples_loader/example1.o
 
-Dans cet exemple,  le programme affichera l'en-tête et la table des sections.
+Dans cet exemple, le programme affichera l'en-tête et la table des sections.
 
-Voici des exemples pour chaque étape de la première partie:
+Voici des exemples pour chaque étape de la première phase:
 
 * Affichage de l'en-tête
     ```sh
@@ -107,38 +107,30 @@ Les options doivent être écrites séparément, ie : ` -h -S` . Un exemple est 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-### Partie 2 
-TO DO ADD EXAMPLE EXECUTIONS ONCE COMPLETED
-* Renumérotation des sections
+### Phase 2 
+L'objectif de la deuxiéme phase est de modifier le contenu du fichier au format ELF donné afin 
+d'effectuer l'implantation. Le programme prendr en paramètre les adresses auxquelles les sections 
+du programme (.text et .data) doivent être chargées. 
 
-* Correction des symboles
+Usage :
+`
+./relocation .text=0x**** .data=0x**** elf-file
+`
 
-* Réimplémentations de type R_ARM_ABS*
+Où ** est remplacé par les adresses auxquelles les sections du programme (.text et .data) doivent être chargées. 
 
-* Réimplémentation de type R_ARM_JUMP24 et R_ARM_CALL
-
-* Interfaçage avec le simulateur ARM
-
-* Production d’un fichier exécutable non relogeable
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- ROADMAP -->
-## Roadmap
-This part is only temporary before we had in the project as a check list for this readme.
-
-- [x] Add Part 1 - readelf
-- [ ] Add Part 2 - Reimplémentation
-    - [ ] step 6
-    - [ ] step 7
-    - [ ] step 8
-    - [ ] step 9
-    - [ ] step 10
-    - [ ] step 11
-- [ ] Complete CR 
-- [ ] Complete Journal
+Par exemple :
+```sh
+./relocation .text=0x20 .data=0x2800 Examples_loader/example4.o
+```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Tests
+
+Pour tester les étapes de phase 1 automatiquement, nous avons créé un programme qui exécute tout les fichiers testés sur notre programme et produire un fichier de résultat nommé `resultat_tests.txt`.
+
+Usage :
+`./tests_part1.sh`
+
+<p align="right">(<a href="#top">back to top</a>)</p>

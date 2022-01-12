@@ -5,10 +5,12 @@
 \usepackage[T1]{fontenc} %fonts
 \usepackage{amsmath} %insert advanced math
 \usepackage{amssymb} %insert math symbols
+\usepackage{enumitem} %lists 
 \usepackage[hidelinks]{hyperref} %insert hyperlinks
 \usepackage{graphicx} %insert images
 \usepackage{listings} %insert code
 \usepackage{soul} %underlines(ul)/barrer(st)
+\usepackage{tabto}
 \usepackage{xcolor} %use new colors
 
 % color for code
@@ -22,8 +24,8 @@
 \title{PROG 5 Projet 2021-2022 \\
 \large Descriptif de la Structure du Code Dévéloppé}
 % Author
-\author{Kimberly Beauvais, Xuan Li, Akira Tobing \\
-Hugo Roger}
+\author{Kimberly Beauvais, Xuan Li, Nathaniel Tobing \\
+Hugo Roger, Emilien Maillard-Simon, Théo Lanneau}
 
 
 \lstdefinestyle{mystyle}{
@@ -68,8 +70,11 @@ Hugo Roger}
 %---------------------------------------------------------------------
 
 \section*{Principe du Projet}
-
-TODO!!!
+L'objectif de ce projet est d’implémenter une sous partie d’un éditeur de liens. 
+Plus précisément, le projet est centré sur la dernière phase, dite de réimplantation, 
+exécut´ee par l’éditeur de liens. Ce document contient une description générale du 
+code créé tout au long du projet, qui est divisé en deux phases : 
+\hyperref[sec:phase1]{Fusion} et \hyperref[sec:phase2]{Implantation}
 
 %---------------------------------------------------------------------
 % Phase 1 - readelf
@@ -78,9 +83,9 @@ TODO!!!
 \section{Phase 1 : Fusion }
 \label{sec:phase1}
 La première phase du projet consiste à rassembler les différentes zones (sections)
-définis dans les fichiers objets donnés en entrée. Le programme principal, \textit{./readelf}, 
+définis dans les fichiers objets donnés en entrée. Le programme principal, \hyperref[sec:readelf]{\textit{./readelf}}, 
 affiche des informations sur un objet au format ELF.  Les options contrôlent les 
-informations particulières à afficher. \textit{elffile}... sont les fichiers 
+informations particulières à afficher. \textit{elffile} \label{sec:elffile}... sont les fichiers 
 objets à examiner.  Les fichiers ELF 32 bits sont supportés, tout comme les 
 archives contenant des fichiers ELF sont supportés. Ce programme exécute une 
 fonction similaire à \textit{objdump} et \textit{readelf} mais avec seulement 
@@ -98,57 +103,165 @@ du fichier et la seconde qui traite les données et imprime le résultat.
 contenues dans l'en-tête ELF au début du fichier.
 
 \subsubsection*{Obtenir l'en-tête du fichier}
+\label{sec:getfheader}
+Afin d'obtenir l'en-tête du fichier, on lis les 16 premiers bytes dans \hyperref[sec:elffile]{\textit{elffile}}
+et le stocker dans le structure : \textit{filedata->header.e\_ident}.
+Après avoir vérifié que le fichier est bien un fichier ELF, on lis le 
+reste de l'en-tête du fichier, effectuons l'opération big endian sur chaque 
+structure et le stocker dans \hyperref[sec:filedata]{\textit{filedata->header}}.
 
 \subsubsection*{Traitement de l'en-tête du fichier}
+Pour afficher les données dans \hyperref[sec:filedata]{\textit{filedata->header}}, 
+on a crée des sous fonctions pour obtenir le bon nom selon les valeurs obtenu depuis 
+\hyperref[sec:getfheader]{\textit{get\_file\_header}}.
+
+
 
 % elf_shdrs - get and process section header table
 
 \subsection{elf\_shdrs}
 \label{sec:sectionheader}
-\noindent Ce fichier contient les fonctions permettant d'afficher les informations contenues dans les en-têtes de section du fichier, si celui-ci en possède.
+\noindent Ce fichier contient les fonctions permettant d'afficher les informations 
+contenues dans les en-têtes de section du fichier, si celui-ci en possède.
 
 \subsubsection*{Obtenir les en-têtes des sections}
+Afin d'obtenir les en-têtes des sections, on verifie qu'il existe des en-têtes des 
+sections depuis les données dans \textit{filedata->header}. S'il y en a, on
+récupére la table d'en-tête de section à partir du \hyperref[sec:elffile]{\textit{elffile}} 
+et pour chaque section, on effectue le fonction \hyperref[sec:endian]{big\_endian} et stocker 
+le resultat dans \textit{filedata->section\_headers}. Dans cette fonction, on obtient 
+également les données pour le tableau des chaînes de caractères pour obtenir le nom 
+des sections.
+
 
 \subsubsection*{Traitement de les en-têtes des sections}
+Pour traiter les données dans \textit{filedata->section\_headers}, on a crée des sous 
+fonctions pour obtenir le bon nom selon les valeurs obtenu depuis 
+\textit{get\_section\_headers}. Ensuite, on affiche le clé des flags. 
+
 
 % read_section - get and process section
 
 \subsection{read\_section}
 \label{sec:section}
+\noindent Ce fichier contient les fonctions permettant d'afficher le section saisie s'il existe
+dans \hyperref[sec:elffile]{\textit{elffile}}. 
+\newline
 
-TO DO!!!!
+La fonction \textit{read\_section} permet de lire le contenu brut 
+(sous forme héxadécimale) d'une section saisie par l'utilisateur. Elle trouve 
+l'emplacement de la section correspondante en comparant son nom avec ceux qui 
+sont dans la section header et après, affiche le contenu dans terminal.
+
 
 % elf_symbol_table - get and process symbol table
 
 \subsection{elf\_symbol\_table}
 \label{sec:symbol}
+\noindent Ce fichier contient les fonctions permettant d'afficher le table des symboles.
 
-TO DO!!!!
+\subsubsection*{Obtenir les en-têtes des sections}
+\label{sec:getsymtab}
+Afin d'obtenir le table de symboles, on récupère le string table depuis \hyperref[sec:elffile]{\textit{elffile}}. 
+Ensuite, utilisant \textit{section\_headers[index\_symtab].sh\_offset} dans 
+l'en tête des sections de la table de symboles, on récupère toutes les entrées.
+
+\subsubsection*{Traitement de les en-têtes des sections}
+Pour traiter les données dans \textit{filedata->symbol\_table}, on a crée des sous 
+fonctions pour obtenir le bon nom ou valeur selon les données obtenu depuis 
+\hyperref[sec:getsymtab]{\textit{get\_symbol\_table}}.
+
 
 % elf_reltab - get and process relocation table
 
 \subsection{elf\_reltab}
 \label{sec:relocation}
+\noindent Ce fichier contient les fonctions permettant d'afficher les tables de 
+reimplementation.
 
-TO DO!!!!
+\subsubsection*{Obtenir les tables de reimplementation}
+\label{sec:getreltab}
+Afin d'obtenir les tables de reimplementation du fichier, on commence par compter 
+le nombre de sections de relocalisation qui se trouvent dans \hyperref[sec:elffile]{\textit{elffile}} pour alluer 
+le bon taille de memoire à \textit{filedata->reloc\_table.rel\_tab}. Ensuite, si une 
+section a le type REL, alors on ajoute les entrées de cette section dans le tableau de 
+reimplantation.
+
+\subsubsection*{Traitement de les tables de reimplementation}
+Pour traiter les données dans \textit{filedata->reloc\_table}, on transform 
+les bits des données obtenu depuis \hyperref[sec:getreltab]{\textit{get\_rel\_table}}
+utilisant un fonction \hyperref[sec:endian]{big endian}. 
 
 % elf_main - get and process file data
 
 \subsection{elf\_main}
+\noindent Ce fichier contient les fonctions pour obtenir le data et les processer 
+selon les \hyperref[sec:options]{options} donnée pour l'utilisateur. Le but de ce 
+fichier est de rassembler toutes les fonctions de la phase 1 pour obtenir un fichier 
+de sortie homogène mais aussi d'obtenir un structure data utilisable pour la 
+\hyperref[sec:phase2]{phase 2} 
 
 \subsubsection*{Structures de Données}
+\label{sec:filedata}
+
+On a créé une nouvelle structure de données \textit{filedata} qui contient 
+toutes les données nécessaires du fichier qui seront manipulées dans les \hyperref[sec:phase1]{phases 1} 
+et \hyperref[sec:phase2]{2}. 
+
+\begin{lstlisting}
+typedef struct filedata {
+    const char *        file_name;          // file name
+    Elf32_Ehdr          file_header;        // file header
+    FILE *              file;               // pointer to file
+    uint32_t            file_offset;        // offset of file
+    uint32_t            file_size;          // size of file
+    Elf32_Shdr *        section_headers;    // section header table
+    Elf32_Rel_Tab       reloc_table;        // relocation table
+    Elf32_Sym_Tab       symbol_table;       // symbol table
+    char *              string_table;       // string table
+    int                 string_table_length;// string table size
+} Filedata;
+\end{lstlisting}
 
 \subsubsection*{Big Endian}
+\label{sec:endian}
+Les fonctions big endians sont utilisé pour transoformer les bytes obtenu depuis 
+le fichier objet en big endian. \textit{field} est le bit qu'on veut transformer. 
+Pour n'importe quel type de donnée, le concept reste le même :
+\begin{lstlisting}
+    1 bit  : return field 
+    2 bits : return (field[1] | field[0] << 8)
+    3 bits : return (field[2] | field[1] << 8 | field[0] << 16);
+    4 bits : return (field[3] | field[2] << 8 | field[1] << 16 | 
+                     field[0] << 24);
+\end{lstlisting}
 
 \subsubsection*{Options}
 \label{sec:options}
+Dans le programme principal pour la phase 1, on a ajouté des options d'affichage 
+selon les besoins d'utilisiateur. Les options sont les suivant:
+
+\tabto{3em} \textbf{-a} \tabto{10em} Equivalent à: -h -S -s
+\tabto{3em} \textbf{-e} \tabto{10em} Equivalent à: -h -S
+\tabto{3em} \textbf{-h} \tabto{10em} Affichage de l'en-tête de fichier ELF
+\tabto{3em} \textbf{-S} \tabto{10em} Affichage de la table des sections
+\tabto{3em} \textbf{-s} \tabto{10em} Affichage de la table des symboles
+\tabto{3em} \textbf{-x} \tabto{10em} Affichage du contenu d'une section
+\tabto{3em} \textbf{-r} \tabto{10em} Affichage des tables de réimplantation
+
+\subsubsection*{Obtenir les Données du fichier ELF}
+\label{sec:data}
+Le but de la fonction \textit{get\_filedata} est d'obtenir tout le données du 
+structure \hyperref[sec:filedata]{\textit{filedata}} depuis la fichier d'objet donnée. Ce fonction va être 
+utilisé aussi pour \hyperref[sec:phase2]{phase 2}. 
 
 % readelf - main function
 
 \subsection{readelf}
 \label{sec:readelf}
-Ce fichier contient le programme principal de la phase 1 de ce projet. 
-
+Ce fichier contient le programme principal de la \hyperref[sec:phase1]{phase 1} de ce projet. 
+Il était créer pour séparer les deux phases tout en réutilisant les fonctions créées en 
+\hyperref[sec:phase1]{phase 1} dans la \hyperref[sec:phase2]{phase 2}.
 
 %---------------------------------------------------------------------
 % Phase 2 - reimplementation
@@ -156,26 +269,36 @@ Ce fichier contient le programme principal de la phase 1 de ce projet.
 
 \section{Phase 2}
 \label{sec:phase2}
+La deuxiéme phase du projet consiste à modifier le contenu du \hyperref[sec:elffile]{\textit{elffile}}
+afin d'effectuer l'implantation. Le programme principal prend en paramètre 
+les adresses auxquelles les sections du programme (typiquement .text et .data) 
+doivent être chargées. Le résultat du programme est mis dans fichier nommé 
+\hyperref[sec:bin]{\textit{out.bin}}. 
+
+% relocation - main function
+
+\subsection{relocation}
+
+\subsubsection*{Renumérotation des sections}
 TO DO!!!!
 
-\subsection{Renumérotation des sections}
+\subsubsection*{Correction des symboles}
 TO DO!!!!
 
-\subsection{Correction des symboles}
+% reimplantation type
+\subsection{reimplantation\_type}
+
+\subsubsection*{Réimplantations de type R\_ARM\_ABS*}
 TO DO!!!!
 
-\subsection{Réimplantations de type R\_ARM\_ABS*}
+\subsubsection*{Réimplantation de type R\_ARM\_JUMP24 et R\_ARM\_CALL}
 TO DO!!!!
 
-\subsection{Réimplantation de type R\_ARM\_JUMP24 et R\_ARM\_CALL}
+\subsection{out.bin}
+\label{sec:bin}
 TO DO!!!!
 
-\subsection{Interfaçage avec le simulateur ARM}
-TO DO!!!!
 
-\subsection{Production d’un fichier exécutable non relogeable}
-
-TO DO!!!!
 
 
 
