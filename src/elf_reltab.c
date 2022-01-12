@@ -268,10 +268,15 @@ bool process_rel_table(Filedata *filedata){
   for (int i=0; i < filedata->file_header.e_shnum; i++){
     if(strcmp(get_section_name(filedata, sections[i].sh_name), ".strtab")==0) strtab_idx=i;
   }
-  printf("strtab_idx = %d\n", strtab_idx);
   char * strtab = malloc(sections[strtab_idx].sh_size);
-  fseek(filedata->file, sections[strtab_idx].sh_offset, SEEK_SET);
-  fread(strtab, sections[strtab_idx].sh_size, 1, filedata->file);
+  if(fseek(filedata->file, sections[strtab_idx].sh_offset, SEEK_SET) != 0){
+    fprintf(stderr, "Failed to seek string table.\n");
+    exit(1);
+  }
+  if(fread(strtab, sections[strtab_idx].sh_size, 1, filedata->file) != 1){
+    fprintf(stderr, "Failed to read string table.\n");
+    exit(1);
+  }
 
   // prints comment if there are no relocation tables in the file
   printf("\n");
