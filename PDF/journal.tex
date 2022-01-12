@@ -8,8 +8,8 @@
 \title{PROG 5 Projet 2021-2022 \\
 \large Journal - Progression du Travail et Repartition des Tâches}
 % Author
-\author{Kimberly Beauvais, Xuan Li, Akira Tobing \\
-Hugo Roger}
+\author{Kimberly Beauvais, Xuan Li, Nathaniel Tobing \\
+Hugo Roger, Emilien Maillard-Simon, Théo Lanneau}
 
 \date{}
 \begin{document}
@@ -150,7 +150,7 @@ de réimplantation). Commit de \textit{elf\_reltab} (statut incomplète).
     pour être en 32 bits
 \end{itemize}
 
-\subsection*{Tâches réalisées par Akira Tobing}
+\subsection*{Tâches réalisées par Nathaniel Tobing}
 \begin{itemize}
     \item Création du code pour étape 5 (Affichage des tables de réimplantation)
     \begin{itemize}
@@ -183,7 +183,7 @@ des testes pour l'étape 1.
     \item Commit new \textit{read\_section} - incomplète
 \end{itemize}
 
-\subsection*{Tâches réalisées par Akira Tobing}
+\subsection*{Tâches réalisées par Nathaniel Tobing}
 \begin{itemize}
     \item Addition de plus de machines pour étape 1
     \item Edition de \textit{readelf} pour ajouter le fonctionnalité de l'étape 5
@@ -200,9 +200,14 @@ des testes pour l'étape 1.
 
 \subsection*{Tâches réalisées par Hugo Roger}
 \begin{itemize}
-    \item Edition des espaces dans \textit{elf\_header.c} pour être le même que 
-    readelf
-    \item Amélioration de code pour \textit{test\_header.sh}
+    \item Création du programme shell pour automatiser les tests
+    \item explication des procédures aux membres du groupe ayant 
+    eu des difficultés les ayant donnés des problèmes pour démarrer le projet
+\end{itemize}
+
+\subsection*{Tâches réalisées par Théo Lanneau}
+\begin{itemize}
+    \item Lecture de la documentation ELF pour une meilleure compréhension 
 \end{itemize}
 
 \noindent\rule{13cm}{0.4pt}
@@ -234,10 +239,16 @@ test). Edition de \textit{readelf} pour ajouter des options.
     \item Commit new \textit{read\_section} - test
 \end{itemize}
 
-\subsection*{Tâches réalisées par Akira Tobing}
+\subsection*{Tâches réalisées par Nathaniel Tobing}
 \begin{itemize}
     \item Débogage de \textit{elf\_symbol\_table} pour l'utiliser en étape 5
     \item Commit de \textit{elf\_reltab} - test
+\end{itemize}
+
+\subsection*{Tâches réalisées par Hugo Roger}
+\begin{itemize}
+    \item Brainstorm d’idées pour pouvoir créer les jeux de tests
+
 \end{itemize}
 
 \noindent\rule{13cm}{0.4pt}
@@ -265,9 +276,14 @@ la phase 2.
     \item Ajouté des commentaires dans \textit{read\_section}
 \end{itemize}
 
-\subsection*{Tâches réalisées par Akira Tobing}
+\subsection*{Tâches réalisées par Nathaniel Tobing}
 \begin{itemize}
     \item Modification des fonctions get\_filedata et process\_file dans \textit{readelf}
+\end{itemize}
+
+\subsection*{Tâches réalisées par Théo Lanneau}
+\begin{itemize}
+    \item Ecriture de nouveaux programmes ARM pour effectuer des tests sur la phase 1
 \end{itemize}
 
 \subsection*{Tâches réalisées par le groupe}
@@ -306,7 +322,7 @@ Création du code pour les étapes 6 (Rénumeration des sections), 8 et 9
     \end{itemize}
 \end{itemize}
 
-\subsection*{Tâches réalisées par Akira Tobing}
+\subsection*{Tâches réalisées par Nathaniel Tobing}
 \begin{itemize}
     \item Modification du programme principal de la phase 1 pour séparer les 
     fonctionnalités du programme (à utiliser dans phase 2) et le main 
@@ -315,8 +331,14 @@ Création du code pour les étapes 6 (Rénumeration des sections), 8 et 9
         \item Création de \textit{elf\_main.h} 
     \end{itemize}
     \item Création du code pour étape 6 (Renumérotation des sections)
-    
     \item Commit \textit{relocation.c} - incomplète
+\end{itemize}
+
+\subsection*{Tâches réalisées par Hugo Roger}
+\begin{itemize}
+    \item Réécriture des jeux de test pour la partie 1 (recommencement depuis zéro)
+    \item Corrections pour chaque programme de la partie 1 pour pouvoir éviter les 
+    conflits lors des tests et les adapter.
 \end{itemize}
 
 \noindent\rule{13cm}{0.4pt}
@@ -341,15 +363,22 @@ Création du code pour les étapes 6 (Rénumeration des sections), 8 et 9
 
 \subsection*{Tâches réalisées par Xuan Li}
 \begin{itemize}
-    \item Commit \textit{reimplantation\_type} - test
+    \item Commit \textit{reimplantation\_type} - incomplète
     \item Continuation du CR pour la phase 1
 \end{itemize}
 
-\subsection*{Tâches réalisées par Akira Tobing}
+\subsection*{Tâches réalisées par Nathaniel Tobing}
 \begin{itemize}
     \item Ajoute de fonction copie fichier dans \textit{relocation} 
     \item Création du code pour étape 7 (Correction des symboles)
     \item Commit \textit{relocation.c} - test
+\end{itemize}
+
+\subsection*{Tâches réalisées par Hugo Roger}
+\begin{itemize}
+    \item Réécriture du programme d’automatisation des tests pour la partie 1 
+    car des modifications ont été faites dans les programmes à exécuter
+    \item Préparation pour la partie 2
 \end{itemize}
 
 \noindent\rule{13cm}{0.4pt}
@@ -367,9 +396,23 @@ Création du code pour les étapes 6 (Rénumeration des sections), 8 et 9
     \item Continuation du code et débogage pour les étapes 8 et 9
 \end{itemize}
 
-\subsection*{Tâches réalisées par Akira Tobing}
+\subsection*{Tâches réalisées par Nathaniel Tobing}
 \begin{itemize}
     \item Aide de débogage pour les étapes 8 et 9
+\end{itemize}
+
+\subsection*{Tâches réalisées par Théo Lanneau}
+\begin{itemize}
+    \item Commit de plusieurs programmes ARM. 
+    \item Écriture d’un script bash pour comparer les Hexdumps de la fonction 
+    readelf existante et de la fonction readelf que nous avons codé.
+\end{itemize}
+
+\subsection*{Tâches réalisées par Hugo Roger}
+\begin{itemize}
+    \item Conclusion de la partie 1 : tests
+    \item Remplissage des parties bugs et tests dans le compte-rendu
+    \item Création de tests pour la partie 2
 \end{itemize}
 
 \noindent\rule{13cm}{0.4pt}
@@ -403,7 +446,7 @@ correctement formatés pour être remis.
     \item Phase 2 - Réimplantation
     \begin{todolist}
         \item[$\boxtimes$] Etape 6 - Renumérotation des sections (11/01/2022)
-        \item Etape 7 - Correction des symboles 
+        \item[$\boxtimes$] Etape 7 - Correction des symboles 
         \item Etape 8 - Réimplantation de type R\_ARM\_ABS*
         \item Etape 9 - Réimplantation de type R\_ARM\_JUMP24 et 
         R\_ARM\_CALL
