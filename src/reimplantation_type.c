@@ -17,7 +17,9 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr, Filedata * filedata
     Elf32_Sym* symtable = filedata->symbol_table.sym_entries;
     uint32_t val_symbol=0;
     int idx=0;
-
+    Elf32_Sym *new_sym_tab = newfile->symbol_table.sym_entries;
+    Elf32_Off offset_sec= filedata->section_headers[2].sh_offset;
+//    printf("Offset:%d\n", offset_sec);
     for (int i = 0; i < ext_tab[index].rel_ent_num; i++){
         Elf32_Addr * addr_p= malloc(sizeof(Elf32_Addr));
         switch (ELF32_R_TYPE(change_endian_32(ext_tab[index].rel_ents[i].r_info))){
@@ -26,9 +28,10 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr, Filedata * filedata
             case R_ARM_ABS8: //S
                 idx = ELF32_R_SYM(change_endian_32(ext_tab[index].rel_ents[i].r_info));
                 printf("nom:%s\n",get_section_name(filedata, filedata->section_headers[change_endian_16(symtable[idx].st_shndx)].sh_name));
-                val_symbol=(uint32_t)get_st_value(symtable, idx);
-                *addr_p = *addr;
-                *addr_p=*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
+                printf("idx:%d\n",idx);
+                val_symbol=(uint32_t)change_endian_32(get_st_value(new_sym_tab, idx));
+                //      *addr_p = *addr;
+                *addr_p=offset_sec+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
                 replace_data(filedata, val_symbol, addr_p, newfile);//replace the value starts at p by addr_symbol
                 free(addr_p);
                 break;
@@ -36,10 +39,12 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr, Filedata * filedata
             case R_ARM_JUMP24: //S - P
                 idx = ELF32_R_SYM(change_endian_32(ext_tab[index].rel_ents[i].r_info));
                 printf("nom:%s\n",get_section_name(filedata, filedata->section_headers[change_endian_16(symtable[idx].st_shndx)].sh_name));
-                val_symbol=get_st_value(symtable, idx);
-                *addr_p = *addr;
+                printf("idx:%d\n",idx);
+                val_symbol=change_endian_32(get_st_value(new_sym_tab, idx));
+                //      *addr_p = *addr;
                 val_symbol=val_symbol-(*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset));
-                *addr_p=*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
+                val_symbol=val_symbol & 0x03FFFFFE;
+                *addr_p=offset_sec+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
                 replace_data(filedata,val_symbol, addr_p, newfile);
                 free(addr_p);
                 break;
