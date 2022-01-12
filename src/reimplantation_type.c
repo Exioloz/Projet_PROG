@@ -64,13 +64,17 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr,Elf32_Off offset_sec
 
 void replace_data(Filedata * filedata, uint32_t val_symbol, Elf32_Addr * addr_p, Filedata * newfile){
     int a = 0;
-    printf("\nVal:%x\n",val_symbol);
-    printf("\nAddr_p:%x\n",*addr_p);
+
+    uint32_t val;
 
     if (newfile->file == NULL){
         fprintf(stderr,"Input file %s is not readble.\n", newfile->file_name);
         free_filedata(newfile);
     }
+    //  rewind(newfile->file);
+    a = fseek(newfile->file,*addr_p,SEEK_SET);
+    fread(&val, sizeof(uint32_t),1,newfile->file);
+    val_symbol=val_symbol+val;
     a = fseek(newfile->file,*addr_p,SEEK_SET);
     a = fwrite( &val_symbol, sizeof(uint32_t) , 1, newfile->file);
     if (1 != a) {
