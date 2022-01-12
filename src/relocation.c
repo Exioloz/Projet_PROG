@@ -132,12 +132,6 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
 
   //allocate new section header table
   newfile->section_headers = malloc(sizeof(Elf32_Shdr) * new_sec_num);
-  //section content
-  char *content_buffer = malloc(0x1000);
-  if(content_buffer == NULL){
-    fprintf(stderr, "Failed to allocate memory for buffer.\n");
-    exit(1);
-  }
 
   //conversion table for symbol section index
   Elf32_Section new_stndx[sec_num];
@@ -176,15 +170,17 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
         new_sec_hdr[j].sh_offset = 0x0 ;
       }
       else{
-        new_sec_hdr[j].sh_offset = sec_off ;
+        new_sec_hdr[j].sh_offset = new_sec_hdr[j].sh_addr + sec_off ;
       }
-      sec_off += sec_hdr[i].sh_size ;
+      sec_off = new_sec_hdr[j].sh_offset + new_sec_hdr[j].sh_size ;
       j++;
     }
   }
 
   //change start of section headers in file header
   newfile->file_header.e_shoff = sec_off ;
+  //change file type to executable
+  newfile->file_header.e_type = ET_EXEC ;
 
   //symbol index correction
   Elf32_Sym_Tab *old_sym_tab = &filedata->symbol_table; //old symbol table
@@ -194,17 +190,40 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   memcpy(new_sym_tab->sym_entries, old_sym_tab->sym_entries, sizeof(Elf32_Sym)*old_sym_tab->sym_tab_num); //copy actual symbol table
 
   Elf32_Section ndx ;
+  Elf32_Addr newval ;
   Elf32_Sym * sym_ents = new_sym_tab->sym_entries ;
   for(i=0 ; i < new_sym_tab->sym_tab_num ; i++){
     ndx = new_stndx[change_endian_16(sym_ents[i].st_shndx)] ;
     sym_ents[i].st_shndx = (Elf32_Section) change_endian_16(ndx);
+    newval = new_sec_hdr[ndx].sh_addr + change_endian_32(sym_ents[i].st_value);
+    sym_ents[i].st_value = change_endian_32(newval);
   }
-  
 
-  /*
+}
+
+/*
   GENERATE NEW BINARY FILE
   */
+void write_file(Filedata *filedata, Filedata *newfile){
+  
+  //counters
+  int i,j ;
+  //other variables
+  Elf32_Sym_Tab *new_sym_tab = &newfile->symbol_table; //new symbol table
+  int sec_num = filedata->file_header.e_shnum ; //old number of sections
+  int new_sec_num = newfile->file_header.e_shnum ; //new number of sections
+  Elf32_Shdr* sec_hdr = filedata->section_headers; //old section headers
+  Elf32_Shdr* new_sec_hdr = newfile->section_headers; //new section headers
+  int sh_sec_off = new_sec_hdr[new_sec_num-1].sh_offset + new_sec_hdr[new_sec_num-1].sh_size; //offset of shdr table
+  
 
+  //section content
+  char *content_buffer = malloc(0x1000);
+  if(content_buffer == NULL){
+    fprintf(stderr, "Failed to allocate memory for buffer.\n");
+    exit(1);
+  }
+  
   //change endianness
   change_header_endian(newfile);
 
@@ -261,11 +280,11 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   change_section_endian(newfile);
 
   //copy section header table to new file
-  if(fseek(newfile->file, sec_off, SEEK_SET) != 0) {
+  if(fseek(newfile->file, sh_sec_off , SEEK_SET) != 0) {
     fprintf(stderr, "Failed to seek section (write).\n");
     exit(1);
   }
-  if(fwrite(newfile->section_headers, newfile->file_header.e_shentsize, newfile->file_header.e_shnum, newfile->file) != newfile->file_header.e_shnum){
+  if(fwrite(new_sec_hdr, newfile->file_header.e_shentsize, newfile->file_header.e_shnum, newfile->file) != newfile->file_header.e_shnum){
     fprintf(stderr, "Failed to write section.\n");
     exit(1);
   }
@@ -274,7 +293,6 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   change_section_endian(newfile);
 
   free(content_buffer);
-
 }
 
 
@@ -333,12 +351,19 @@ int main(int argc, char ** argv){
   //if you have any concrete ideas, please feel free to implement them here
 
   //removing the relocation sections
-
-  renumerotation(filedata, newfile, text_addr, data_addr);
-  
-  process_file_header(newfile);
-  process_section_headers(newfile);
-  process_symbol_table(newfile);
+  if(filedata->file_header.e_type == ET_REL){
+    renumerotation(filedata, newfile, text_addr, data_addr);
+    
+    write_file(filedata, newfile);
+    
+    process_file_header(newfile);
+    process_section_headers(newfile);
+    process_symbol_table(newfile);
+  }
+  else{
+    fprintf(stderr, "Input file is not a relocatable file.\n");
+    exit(1);
+  }
 
   free_filedata(filedata);
 
