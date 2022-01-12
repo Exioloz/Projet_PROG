@@ -4,10 +4,8 @@ main:
 
 .data
 mot1:
-    .word mot
+    .word
 mot2:
     .hword 
 mot3:
-    .doubleword
-mot4:
     .byte

@@ -8,4 +8,3 @@ main:
     and r1, r2
     mvn r1, r2
     and r1, r2
-    xor r1, r2
