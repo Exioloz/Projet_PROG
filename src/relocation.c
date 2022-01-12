@@ -185,6 +185,8 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
 
   //change start of section headers in file header
   newfile->file_header.e_shoff = sec_off ;
+  //change file type to executable
+  newfile->file_header.e_type = ET_EXEC ;
 
   //symbol index correction
   Elf32_Sym_Tab *old_sym_tab = &filedata->symbol_table; //old symbol table
@@ -333,12 +335,17 @@ int main(int argc, char ** argv){
   //if you have any concrete ideas, please feel free to implement them here
 
   //removing the relocation sections
-
-  renumerotation(filedata, newfile, text_addr, data_addr);
-  
-  process_file_header(newfile);
-  process_section_headers(newfile);
-  process_symbol_table(newfile);
+  if(filedata->file_header.e_type == ET_REL){
+    renumerotation(filedata, newfile, text_addr, data_addr);
+    
+    process_file_header(newfile);
+    process_section_headers(newfile);
+    process_symbol_table(newfile);
+  }
+  else{
+    fprintf(stderr, "Input file is not a relocatable file.\n");
+    exit(1);
+  }
 
   free_filedata(filedata);
 
