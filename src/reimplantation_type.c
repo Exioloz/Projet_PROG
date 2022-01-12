@@ -1,16 +1,20 @@
 #include "reimplantation_type.h"
 
-void implantation(Elf32_Addr * text_addr, Elf32_Addr * data_addr, Filedata * filedata, Filedata * newfile){
-    Elf32_Ext_Rel * ext_tab;
-    ext_tab = filedata->reloc_table.rel_tab;
-    for(int i = 0; i < filedata->reloc_table.rel_num; i++ ) {
-        if (strcmp(get_section_name(filedata, ext_tab[i].rel_sh_name), ".rel.text")==0) {
-            calcul_val(ext_tab, text_addr, filedata, i, newfile);
-        } else if (strcmp(get_section_name(filedata, ext_tab[i].rel_sh_name), ".rel.data")==0) {
-            calcul_val(ext_tab, data_addr, filedata, i, newfile);
-        }
-    }
+void implantation(Filedata * filedata, Filedata * newfile){
+    int i,j;
+    Elf32_Rel_Tab rels = filedata->reloc_table;
+    Elf32_Ext_Rel * ext_tab = rels.rel_tab;
+    Elf32_Shdr *sec_hdr = newfile->section_headers ;
+    char *sec_name;
 
+    for(i = 0; i < rels.rel_num ; i++ ) {
+        sec_name = &get_section_name(filedata, ext_tab[i].rel_sh_name)[4] ;
+        for(j = 0 ; j < newfile->file_header.e_shnum ; j++){
+           if(strcmp(sec_name, get_section_name(newfile, sec_hdr[j].sh_name))==0){
+                calcul_val(ext_tab, &sec_hdr[j].sh_addr, sec_hdr[j].sh_offset, filedata, i, newfile);
+            }
+        }   
+    }
 }
 
 void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr,Elf32_Off offset_sec, Filedata * filedata, int index, Filedata * newfile){
@@ -33,7 +37,6 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr,Elf32_Off offset_sec
                 *addr_p = *addr;
                 *addr_p=offset_sec+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
                 printf("Ofset:%d\n",change_endian_32(ext_tab[index].rel_ents[i].r_offset));
-                //   *addr_p=*addr_p+change_endian_32(ext_tab[index].rel_ents[i].r_offset);
                 replace_data(filedata, val_symbol, addr_p, newfile);//replace the value starts at p by addr_symbol
                 free(addr_p);
                 break;
@@ -43,7 +46,6 @@ void calcul_val(Elf32_Ext_Rel *  ext_tab, Elf32_Addr * addr,Elf32_Off offset_sec
                 printf("nom:%s\n",get_section_name(filedata, filedata->section_headers[change_endian_16(symtable[idx].st_shndx)].sh_name));
                 printf("idx:%d\n",idx);
                 val_symbol=(uint32_t)change_endian_32(get_st_value(new_sym_tab, idx));
-                //      *addr_p = *addr;
                 val_symbol=(val_symbol-(*addr+change_endian_32(ext_tab[index].rel_ents[i].r_offset)));
                 val_symbol=change_endian_32(((uint16_t)val_symbol & 0x03FFFFFE)>>2);
 
