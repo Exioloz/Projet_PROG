@@ -4,6 +4,7 @@
 #include "elf_symbol_table.h"
 #include "elf_reltab.h"
 #include "read_section.h"
+#include "reimplantation_type.h"
 #include <string.h>
 
 /*
@@ -356,6 +357,8 @@ int main(int argc, char ** argv){
     renumerotation(filedata, newfile, text_addr, data_addr);
     
     write_file(filedata, newfile);
+
+    implantation(filedata, newfile);
     
     process_file_header(newfile);
     process_section_headers(newfile);
