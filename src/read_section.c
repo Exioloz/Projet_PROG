@@ -36,7 +36,7 @@ Find the wanted section by comparing the name with every name in .shstrtab
                               Affichage
 */
         printf("\n");
-        printf("Vidange hexadecimale de la section <<  %s>> :\n", temp);
+        printf("Hex dump of section '%s':\n", temp);
 
         if (filedata->section_headers[i].sh_size == 0){
             fprintf(stderr,"Section '%s' has no data to dump\n", temp);
