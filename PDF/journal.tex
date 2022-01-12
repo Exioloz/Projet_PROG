@@ -1,5 +1,8 @@
 \documentclass[11pt,letterpaper]{article}
 \usepackage{pifont}
+\usepackage{enumitem,amssymb}
+\newlist{todolist}{itemize}{2}
+\setlist[todolist]{label=$\square$}
 
 % title
 \title{PROG 5 Projet 2021-2022 \\
@@ -361,12 +364,12 @@ Création du code pour les étapes 6 (Rénumeration des sections), 8 et 9
 
 \subsection*{Tâches réalisées par Xuan Li}
 \begin{itemize}
-    \item Continuation du CR 
+    \item Continuation du code et débogage pour les étapes 8 et 9
 \end{itemize}
 
 \subsection*{Tâches réalisées par Akira Tobing}
 \begin{itemize}
-    \item 
+    \item Aide de débogage pour les étapes 8 et 9
 \end{itemize}
 
 \noindent\rule{13cm}{0.4pt}
@@ -383,6 +386,31 @@ correctement formatés pour être remis.
     \item Rendu du code à 12h
     \item Preparation pour le soutenance
 \end{itemize}
+
+\noindent\rule{13cm}{0.4pt}
+
+% Check list ---------------------------------------------------------------
+\section*{Checklist}
+\begin{todolist}
+    \item[$\boxtimes$] Phase 1 - Fusion (07/01/2022)
+    \begin{todolist}
+      \item[$\boxtimes$] Etape 1 - Affichage de l'en-tête  (03/01/2022)
+      \item[$\boxtimes$] Etape 2 - Affichage de la table des sections (04/01/2022)
+      \item[$\boxtimes$] Etape 3 - Affichage du contenu d'une section (06/01/2022)
+      \item[$\boxtimes$] Etape 4 - Affichage de la table des symboles (06/01/2022)
+      \item[$\boxtimes$] Etape 5 - Affichage des tables de réimplantation (06/01/2022)
+    \end{todolist}
+    \item Phase 2 - Réimplantation
+    \begin{todolist}
+        \item[$\boxtimes$] Etape 6 - Renumérotation des sections (11/01/2022)
+        \item Etape 7 - Correction des symboles 
+        \item Etape 8 - Réimplantation de type R\_ARM\_ABS*
+        \item Etape 9 - Réimplantation de type R\_ARM\_JUMP24 et 
+        R\_ARM\_CALL
+        \item Etape 10 - Interfaçage avec le simulateur ARM 
+        \item Etape 11 - Production d'un fichier exécutable non relogeable
+      \end{todolist}
+  \end{todolist}
 
 
 \end{document}

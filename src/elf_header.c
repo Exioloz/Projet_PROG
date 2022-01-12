@@ -304,6 +304,15 @@ bool get_file_header(Filedata *filedata){
     // Read the ident of file header from ELF file
     if (fread(filedata->file_header.e_ident, EI_NIDENT, 1, filedata->file) != 1)
         return false;
+    Elf32_Ehdr * head = & filedata->file_header;
+    // Verify that the file is an ELF file using first 4 bytes
+    if (head->e_ident[EI_MAG0] != ELFMAG0 
+        || head->e_ident[EI_MAG1] != ELFMAG1 
+        || head->e_ident[EI_MAG2] != ELFMAG2 
+        || head->e_ident[EI_MAG3] != ELFMAG3){
+        printf("Not an ELF file - wrong starting magic bytes \n");
+        return false;
+    }
     // Verify that the file data is big endian
     switch (filedata->file_header.e_ident[EI_DATA]){
         case ELFDATA2MSB:
@@ -349,16 +358,8 @@ Function: Process File Header
 
 */
 bool process_file_header(Filedata * filedata){
-    Elf32_Ehdr * header = & filedata->file_header;
-    // Verify that the file is an ELF file using first 4 bytes
-    if (header->e_ident[EI_MAG0] != ELFMAG0 
-        || header->e_ident[EI_MAG1] != ELFMAG1 
-        || header->e_ident[EI_MAG2] != ELFMAG2 
-        || header->e_ident[EI_MAG3] != ELFMAG3){
-        printf("Not an ELF file - wrong starting magic bytes \n");
-        return false;
-    }
     unsigned i;
+    Elf32_Ehdr * header = & filedata->file_header;
     printf("ELF Header:\n");
     printf("  Magic:   ");
     // Print first 16 bytes (Machine Independent Data)
