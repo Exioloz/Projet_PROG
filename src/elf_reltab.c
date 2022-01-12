@@ -263,6 +263,20 @@ bool process_rel_table(Filedata *filedata){
   Elf32_Ext_Rel* ents; //placeholder address for individual relocation table
   Elf32_Sym * symtab = filedata->symbol_table.sym_entries; //get symbol table from filedata
   Elf32_Shdr* sections = filedata->section_headers; // get section headers from filedata
+  //get symbol string table
+  int strtab_idx = 0;
+  for (int i=0; i < filedata->file_header.e_shnum; i++){
+    if(strcmp(get_section_name(filedata, sections[i].sh_name), ".strtab")==0) strtab_idx=i;
+  }
+  char * strtab = malloc(sections[strtab_idx].sh_size);
+  if(fseek(filedata->file, sections[strtab_idx].sh_offset, SEEK_SET) != 0){
+    fprintf(stderr, "Failed to seek string table.\n");
+    exit(1);
+  }
+  if(fread(strtab, sections[strtab_idx].sh_size, 1, filedata->file) != 1){
+    fprintf(stderr, "Failed to read string table.\n");
+    exit(1);
+  }
 
   // prints comment if there are no relocation tables in the file
   printf("\n");
@@ -288,7 +302,12 @@ bool process_rel_table(Filedata *filedata){
           printf("%-12s     ", get_reloc_type(ELF32_R_TYPE(change_endian_32(ents->rel_ents[j].r_info)))); //print type
           idx = ELF32_R_SYM(change_endian_32(ents->rel_ents[j].r_info)); //gets index of symbol in symbol table
           printf("%8.8x  ", change_endian_32(get_st_value(symtab, idx))); //print sym value
-          printf("%s     ", get_section_name(filedata, sections[change_endian_16(symtab[idx].st_shndx)].sh_name)); //print sym name
+          if(symtab[idx].st_name == 0){
+            printf("%s     ", get_section_name(filedata, sections[change_endian_16(symtab[idx].st_shndx)].sh_name)); //print sym name
+          }
+          else{
+            printf("%s     ", get_st_name(symtab, idx, strtab)); //print sym name
+          }
           printf("\n");
         }
         printf("\n");
