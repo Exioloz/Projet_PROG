@@ -125,10 +125,10 @@ done
 printf '\n'
 
 echo "DONE"
-#rm .temp_res
-#rm .temp_sec
-#rm .original
-#rm .custom
+rm .temp_res
+rm .temp_sec
+rm .original
+rm .custom
 chmod u+rwx resultat_tests.txt 
 
 
