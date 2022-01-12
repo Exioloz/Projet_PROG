@@ -57,7 +57,7 @@ Nous avons également implémenté des options comme dans readelf afin de mieux 
     
     ./readelf -h -S Examples_loader/example1.o
 
-Dans cet exemple,  le programme affichera l'en-tête et la table des sections.
+Dans cet exemple, le programme affichera l'en-tête et la table des sections.
 
 Voici des exemples pour chaque étape de la première phase:
 
@@ -126,9 +126,9 @@ Par exemple :
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-## Testes
+## Tests
 
-Pour tester les étapes de phase 1 automaituqement, nous avons crée un programme qui éxécute tout les fichiers testes sur notre programme et produire un fichier de résultat nommé `resultat_tests.txt`.
+Pour tester les étapes de phase 1 automatiquement, nous avons créé un programme qui exécute tout les fichiers testés sur notre programme et produire un fichier de résultat nommé `resultat_tests.txt`.
 
 Usage :
 `./tests_part1.sh`
