@@ -84,7 +84,7 @@ Ici on veut tester l’affichage des hex-dumps des différentes sections des
 fichiers ELF. Pour chaque fichier ELF on va chercher l’ensemble des noms de 
 ses différentes sections via un nettoyage de la sortie de la fonction Readelf -h.
 Puis pour chaque section on compare les hex-dumps des deux fonctions.
-
+Si une section est vide elle est filtrée et donc pas testée.
 
 
 %1.4
@@ -196,21 +196,21 @@ directives différentes
 
 \subsection{Tests Manuels}
  
-\noindent tests manuels pour la partie 2
+\noindent Tests manuels pour la partie 2
 
-\noindent test simple
+\noindent Test simple
 \begin{lstlisting}
     ./relocation .text=0x20 .data=0x2800 Examples\_loader/example1.o
 \end{lstlisting}
 \bigbreak
 
-\noindent test avec adresses nulles (donc aucun changement) :
+\noindent Test avec adresses nulles (donc aucun changement) :
 \begin{lstlisting}
     ./relocation .text=0 .data=0 Examples\_loader/example1.o
 \end{lstlisting}
 \bigbreak
 
-\noindent test avec un programme sans section .data dans le fichier .s d'origine 
+\noindent Test avec un programme sans section .data dans le fichier .s d'origine 
 (aucune différence, car la section .data est quand même créée dans le .o lors 
 de la compilation)
 \begin{lstlisting}
@@ -218,18 +218,28 @@ de la compilation)
 \end{lstlisting}
 \bigbreak
 
-Tests avec adresses données en argument étant des nombres négatifs:
+\noindent Tests avec adresses données en argument étant des nombres négatifs:
 Avec ce programme, on interdit les adresses négatives. Au niveau du code, 
 normalement cela fonctionne mais les numéros d'adresses deviennent très grands 
 car on a implémenté avec un type unsigned.
-- test avec section .text a une nouvelle adresse étant un nombre négatif
-./relocation .text=-0x34 .data=0x2800 Examples\_loader/example1.o
-- test avec section .data a une nouvelle adresse étant un nombre négatif
-./relocation .text=0 .data=-0x11 Examples\_loader/example1.o
+\bigbreak
+\noindent - test avec section .text a une nouvelle adresse étant un nombre négatif
+\begin{lstlisting}
+    ./relocation .text=-0x34 .data=0x2800 Examples\_loader/example1.o
+\end{lstlisting}
 
-- test avec fichier exécutable (donne un message d’erreur, seuls les fichiers 
+\noindent - test avec section .data a une nouvelle adresse étant un nombre négatif
+\begin{lstlisting}
+    ./relocation .text=0 .data=-0x11 Examples\_loader/example1.o
+\end{lstlisting}
+
+
+\noindent - test avec fichier exécutable (donne un message d’erreur, seuls les fichiers 
 avec sections de relocation sont permis) :
-./relocation .text=0 .data=-0x11 Examples\_loader/example10
+\begin{lstlisting}
+    ./relocation .text=0 .data=-0x11 Examples\_loader/example10
+\end{lstlisting}
+
 
 
 \end{document}

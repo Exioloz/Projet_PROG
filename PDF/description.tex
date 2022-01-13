@@ -199,12 +199,12 @@ utilisant un fonction \hyperref[sec:endian]{big endian}.
 selon les \hyperref[sec:options]{options} donnée pour l'utilisateur. Le but de ce 
 fichier est de rassembler toutes les fonctions de la phase 1 pour obtenir un fichier 
 de sortie homogène mais aussi d'obtenir un structure data utilisable pour la 
-\hyperref[sec:phase2]{phase 2} 
+\hyperref[sec:phase2]{phase 2}.
 
 \subsubsection*{Structures de Données}
 \label{sec:filedata}
 
-On a créé une nouvelle structure de données \textit{filedata} qui contient 
+On a créé une nouvelle structure de données \textit{Filedata} qui contient 
 toutes les données nécessaires du fichier qui seront manipulées dans les \hyperref[sec:phase1]{phases 1} 
 et \hyperref[sec:phase2]{2}. 
 
@@ -221,6 +221,38 @@ typedef struct filedata {
     char *              string_table;       // string table
     int                 string_table_length;// string table size
 } Filedata;
+\end{lstlisting}
+\bigbreak
+
+On a créé une nouvelle structure de données \textit{Elf32\_Ext\_Rel} qui contient 
+la table des relocation et quelques variables qui peut-être utile. 
+\begin{lstlisting}
+typedef struct{
+    Elf32_Word  rel_sh_name;    //name of the relocation table section
+    Elf32_Off   rel_sh_offset;  //offset of the section
+    Elf32_Half  rel_ent_num;    //number of Elf32_Rel entries
+    Elf32_Rel*  rel_ents;       //table of entries
+} Elf32_Ext_Rel ;
+\end{lstlisting}
+\bigbreak
+
+On a créé une nouvelle structure de données \textit{Elf32\_Rel\_Tab;} qui contient 
+le nombre de table de relocation et une table de type \textit{Elf32\_Ext\_Rel}.
+\begin{lstlisting}
+typedef struct{
+    Elf32_Half      rel_num; //number of relocation table sections
+    Elf32_Ext_Rel*  rel_tab; //table of relocation tables pertaining to those sections
+} Elf32_Rel_Tab;
+\end{lstlisting}
+\bigbreak
+
+On a créé une nouvelle structure de données \textit{Elf32\_Sym\_Tab;} qui contient 
+le nombre de symboles et la table de symbol elle-même. 
+\begin{lstlisting}
+typedef struct{
+    Elf32_Half sym_tab_num; //number of symbol table entries
+    Elf32_Sym* sym_entries; //actual symbol table
+} Elf32_Sym_Tab;
 \end{lstlisting}
 
 \subsubsection*{Big Endian}

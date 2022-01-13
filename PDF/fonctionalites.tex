@@ -57,9 +57,46 @@ Hugo Roger, Emilien Maillard-Simon, Théo Lanneau}
 \rule{\textwidth}{1pt}
 \end{center}
 
-% table of contents
-\renewcommand{\contentsname}{Table des Matières}
-\tableofcontents
+\section*{Phase 1: ./readelf}
+
+\subsection*{Implémentées :}
+\begin{itemize}
+    \item Affichage de l'en-tête
+    \item Affichage de la table des sections et des détails relatifs à chaque 
+    section
+    \item Affichage du contenu d'une section
+    \item Affichage de la table des symboles et des détails relatifs à chaque 
+    symbole
+    \item Affichage des tables de réimplantation et des détails relatifs à chaque 
+    entrée
+\end{itemize}
+
+
+\subsection*{Manquantes :}
+\begin{itemize}
+    \item Possibilité de mettre plusieurs fichiers binaires à lire dans les arguments
+\end{itemize}
+
+
+\section*{Phase 2: ./relocation}
+
+\subsection*{Implémentées :}
+\begin{itemize}
+    \item Renumérotation des sections
+    \item Correction des symboles
+    \item Réimplantations de type R\_ARM\_ABS* 
+    \item Réimplantations de type R\_ARM\_JUMP24 et R\_ARM\_CALL
+    \item Production d'un fichier ELF binaire modifiée
+\end{itemize}
+
+
+\subsection*{Manquantes :}
+\begin{itemize}
+    \item Possibilité de mettre plusieurs fichiers binaires à lire dans les arguments
+    \item Interfaçage avec le simulateur ARM
+    \item Production d'un vrai fichier exécutable non relogeable
+\end{itemize}
+
 
 \newpage
 
