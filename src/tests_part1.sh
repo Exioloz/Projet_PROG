@@ -52,6 +52,8 @@ do
 		readelf -x $line $test 2> /dev/null | sed '1,2d' | head -n -2 > .original
 		./readelf -x $line $test 2> /dev/null | sed '1,3d' | head -n -2 | tail -n +2 > .custom
 
+		sed -i -e '/NOTE:/d' .original
+		sed -i -e '/There are no relocations/d' .original
 		sed -i -e '/Usage:/,+11d' .custom
 
 		if diff .original .custom > .temp_res
