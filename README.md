@@ -124,6 +124,11 @@ Par exemple :
 ./relocation .text=0x20 .data=0x2800 Examples_loader/example4.o
 ```
 
+Le programme affiche le nouveau en-tête, la nouvelle table des en-têtes des sections, et la nouvelle table de symboles.
+
+Le programme génère aussi un nouveau fichier binaire qui s'appelle `out.bin` qui contient le nouveau en-tête et les nouvelles tables 
+et les contenus des sections après réimplantation.
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Tests
