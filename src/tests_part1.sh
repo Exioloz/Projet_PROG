@@ -46,15 +46,25 @@ do
 
   	#1.3
 
-	cat .custom | sed -n '/Section Headers:/,/Key to Flags:/p' | tr -s " " | sed '1,3d' | head -n -1 | sed -e 's/\[[^][]*]//g' | awk '{print $1}' > .temp_sec
+	# fait une liste des sections (si la section est vide donc à une taille de 0, elle n'est pas testée)
+	cat .custom | sed -n '/Section Headers:/,/Key to Flags:/p' | tr -s " " | sed '1,3d' | head -n -1 | sed -e 's/\[[^][]*]//g' | awk '{print $1, $5}' | sed '/000000/d' | awk '{print $1}'> .temp_sec
+	#cat .temp_sec | awk '{print $1} | .temp_sec 
 
 	while IFS= read -r line; do
-		readelf -x $line $test 2> /dev/null | sed '1,2d' | head -n -2 > .original
-		./readelf -x $line $test 2> /dev/null | sed '1,3d' | head -n -2 | tail -n +2 > .custom
+		readelf -x $line $test 2> /dev/null | head -n -1 | tr -s ' ' > .original
+		./readelf -x $line $test 2> /dev/null | head -n -1  | tail -n +2 | tr -s ' ' > .custom
 
+		#lignes inutiles
 		sed -i -e '/NOTE:/d' .original
-		sed -i -e '/There are no relocations/d' .original
-		sed -i -e '/Usage:/,+11d' .custom
+		sed -i -e '/There are no relocations in this file\./d' .original
+
+		#non traite
+		sed -i 's/\. \./\.\.\./g' .original
+		sed -i 's/\.\-\./\.\.\./g' .original
+		sed -i 's/\.\!\./\.\.\./g' .original
+		sed -i 's/GNU AS /GNU\.AS\./g' .original
+		sed -i 's/GNU AS/GNU\.AS/g' .original
+		sed -i 's/\.\-\./\.\.\./g' .custom 2> /dev/null
 
 		if diff .original .custom > .temp_res
 		then
@@ -116,8 +126,3 @@ rm .temp_sec
 rm .original
 rm .custom
 chmod u+rwx resultat_tests.txt 
-
-
-
-
-
