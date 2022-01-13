@@ -81,21 +81,21 @@ void replace_data(Filedata * filedata, uint32_t val_symbol, Elf32_Addr * addr_p,
     // compare every byte in data_old with 0xff and 0
     // if true, then data_old takes the corresponding byte in data_sym
     // if false, data_old = data_old + data_sym
-    if(data_old[1] == 0xff || data[1] == 0){
+    if(data_old[1] == 0xff || data_old[1] == 0){
         data_old [1]=data_sym[1];
     }
     else{
         data_old[1]+=data_sym[1];
     }
 
-    if(data_old[2] == 0xff || data[2] == 0){
+    if(data_old[2] == 0xff || dat_old[2] == 0){
         data_old[2]=data_sym[2];
     }
     else{
         data_old[2]+=data_sym[2];
     }
 
-    if(data_old[3] == 0xff || data[3] == 0){
+    if(data_old[3] == 0xff || data_old[3] == 0){
         data_old[3]=data_sym[3];
     }
     else{
