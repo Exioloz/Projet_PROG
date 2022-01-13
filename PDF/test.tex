@@ -61,5 +61,175 @@ Hugo Roger, Emilien Maillard-Simon, Théo Lanneau}
 \renewcommand{\contentsname}{Table des Matières}
 \tableofcontents
 
+% Phase 1
+\section{Phase 1}
+Le but des tests est d’exécuter avec différentes options la fonction créée 
+Readelf sur un jeu significatif de programmes ARM compilés, puis de comparer 
+les résultats à ceux obtenus par l’exécution de la commande Readelf existante.
+
+
+%1.1
+\subsection{Affichage de l’en-tête}
+On teste d’abord l’affichage de l’entête des fichiers ELF avec un script qui 
+nettoie les sorties des deux fonctions puis les compare. Si les 2 sorties sont 
+identiques, le test est validé.
+
+%1.2
+\subsection{Affichage de la table des sections}
+On teste ensuite l’affichage de l’entête des sections des fichiers ELF.
+
+%1.3
+\subsection{Affichage du contenu d'une section}
+Ici on veut tester l’affichage des hex-dumps des différentes sections des 
+fichiers ELF. Pour chaque fichier ELF on va chercher l’ensemble des noms de 
+ses différentes sections via un nettoyage de la sortie de la fonction Readelf -h.
+Puis pour chaque section on compare les hex-dumps des deux fonctions.
+
+
+
+%1.4
+\subsection{Affichage de la table des symboles}
+On compare ensuite les deux tables des symboles obtenues à partir des deux 
+fonctions.
+
+%1.5
+\subsection{Affichage des tables de réimplantation}
+Finalement on compare les deux tables de réadressage obtenues à partir des 
+deux fonctions.
+% Phase 2
+\section{Phase 2}
+Dans cette partie, les tests sont faits manuellement. Il s’agit de comparer 
+la sortie faite par la commande 
+
+\begin{lstlisting}
+    ./relocation .text=<nombre> .data=<nombre> 
+      Examples_loader/<fichier.o>
+\end{lstlisting}
+et celle avec l’utilisation de la commande 
+\begin{lstlisting}
+    readelf -hSs Examples_loader/<fichier.o>
+\end{lstlisting}
+
+
+%2.6
+\subsection{Rénumerotation des sections}
+Il faut vérifier que les sections du type REL ont bien été supprimées et les 
+sections sont bien renumérotées et aussi que l’adresse des sections .text et 
+.data sont changées.
+
+%2.7
+\subsection{Correction des symboles}
+Il faut verifier que les valeurs et les ndx des symboles dans la table des symboles 
+ont bien été changés et que les ndx pointe vers la même section qu’avant
+
+%2.8
+\subsection{Réimplantation de type ARM}
+Il faut lire le contenu des sections affectées par la réimplantation (readelf -x) 
+et vérifier que les valeurs sont bien changées.(pour vérifier l’écriture du nouveau 
+fichier binaire) Il faut faire 
+\begin{lstlisting}
+    readelf -hSs out.bin 
+\end{lstlisting}
+et vérifier que l’affichage est le même que la sortie de la commande ./relocation
+
+\section{Différent Testes}
+\subsection{Tests Automatique}
+
+\noindent Ces tests sont effectués automatiquement en lançant le scripte 
+\begin{lstlisting}
+    ./tests\_part1.sh
+\end{lstlisting}
+
+\noindent \textbf{example5.s} :
+Ce test cherche à vérifier si le programme fonctionne en chargeant différentes 
+données dans le même registre. 
+\bigbreak
+
+\noindent \textbf{example6.s} :
+Ce test cherche à vérifier si le programme fonctionne en ignorant une liste 
+d’instructions
+\bigbreak
+
+\noindent \textbf{example7.s} :
+Ce test cherche à vérifier si le programme fonctionne en n’ayant aucune 
+instruction
+\bigbreak
+
+\noindent \textbf{example8.s} : 
+Ce test cherche à vérifier si le programme fonctionne en ayant un .text vide et 
+un .data rempli
+\bigbreak
+
+\noindent \textbf{example9.s} :
+Ce test cherche à vérifier si le programme fonctionne en ayant plusieurs balises 
+inutilisées
+\bigbreak
+
+\noindent \textbf{example10.s} :
+Ce test cherche à vérifier si le programme fonctionne en utilisant une pile
+\bigbreak
+
+\noindent \textbf{example11.s} :
+Ce test cherche à vérifier si le programme fonctionne en ayant une boucle avec des 
+add et mov
+\bigbreak
+
+\noindent \textbf{example12.s} :
+Ce test cherche à vérifier si le programme fonctionne en ayant plusieurs données de 
+différents types
+\bigbreak
+
+\noindent \textbf{example13.s} :
+Ce test cherche à vérifier si le programme fonctionne en utilisant des opérations 
+logiques
+\bigbreak
+
+\noindent \textbf{example14.s} :
+Ce test cherche à vérifier si le programme fonctionne en utilisant les différents 
+flags pour des branchements
+\bigbreak
+
+\noindent \textbf{example15.s} :
+Ce test cherche à vérifier si le programme fonctionne en ajoutant plusieurs 
+directives différentes
+\bigbreak
+
+\subsection{Tests Manuels}
+ 
+\noindent tests manuels pour la partie 2
+
+\noindent test simple
+\begin{lstlisting}
+    ./relocation .text=0x20 .data=0x2800 Examples\_loader/example1.o
+\end{lstlisting}
+\bigbreak
+
+\noindent test avec adresses nulles (donc aucun changement) :
+\begin{lstlisting}
+    ./relocation .text=0 .data=0 Examples\_loader/example1.o
+\end{lstlisting}
+\bigbreak
+
+\noindent test avec un programme sans section .data dans le fichier .s d'origine 
+(aucune différence, car la section .data est quand même créée dans le .o lors 
+de la compilation)
+\begin{lstlisting}
+    ./relocation .text=0x20 .data=0x2800 Examples\_loader/example2.o
+\end{lstlisting}
+\bigbreak
+
+Tests avec adresses données en argument étant des nombres négatifs:
+Avec ce programme, on interdit les adresses négatives. Au niveau du code, 
+normalement cela fonctionne mais les numéros d'adresses deviennent très grands 
+car on a implémenté avec un type unsigned.
+- test avec section .text a une nouvelle adresse étant un nombre négatif
+./relocation .text=-0x34 .data=0x2800 Examples\_loader/example1.o
+- test avec section .data a une nouvelle adresse étant un nombre négatif
+./relocation .text=0 .data=-0x11 Examples\_loader/example1.o
+
+- test avec fichier exécutable (donne un message d’erreur, seuls les fichiers 
+avec sections de relocation sont permis) :
+./relocation .text=0 .data=-0x11 Examples\_loader/example10
+
 
 \end{document}
