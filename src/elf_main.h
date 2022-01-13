@@ -21,8 +21,8 @@ typedef struct{
 } Elf32_Rel_Tab;
 
 typedef struct{
-  Elf32_Half sym_tab_num;
-  Elf32_Sym* sym_entries;
+  Elf32_Half sym_tab_num; //number of symbol table entries
+  Elf32_Sym* sym_entries; //actual symbol table
 } Elf32_Sym_Tab;
 
 /*
