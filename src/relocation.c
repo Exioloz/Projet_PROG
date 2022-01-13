@@ -18,20 +18,24 @@ void reloc_help_msg(){
 }
 
 /*
-Function: Get text address
+Function: Get text address from command line argument
   
 */
 void get_text_addr(char *arg, Elf32_Addr *addr){
-  char val[11];
+  char val[11]; //string for argument
   if(arg[0] == '.' && arg[5] == '='){
     arg[5] = '\0'; //split argument into two parts
     if(strlen(&arg[6]) > 10){
       fprintf(stderr, "Address value has to be 32-bit (max 8 digit) hexadecimal number!\n");
       exit(1);
     }
+    if(arg[6] == '-'){ //if number is negative
+      fprintf(stderr, "Address value cannot be negative!\n");
+      exit(1);
+    }
     strcpy(val, &arg[6]);
     if(strcmp(arg,".text") == 0){
-      *addr = (Elf32_Addr) strtol(val, NULL, 0);
+      *addr = (Elf32_Addr) strtol(val, NULL, 0); //get value of address
     }
     else{
       fprintf(stderr, "Invalid section name\n");
@@ -46,20 +50,24 @@ void get_text_addr(char *arg, Elf32_Addr *addr){
 }
 
 /*
-Function: Get Data Address
+Function: Get data Address from command line argument
 
 */
 void get_data_addr(char *arg, Elf32_Addr *addr){
-  char val[11];
+  char val[11]; //string for argument
   if(arg[0] == '.' && arg[5] == '='){
     arg[5] = '\0'; //split argument into two parts
     if(strlen(&arg[6]) > 10){
       fprintf(stderr, "Address value has to be 32-bit (max 8 digit) hexadecimal number!\n");
       exit(1);
     }
+    if(arg[6] == '-'){ //if number is negative
+      fprintf(stderr, "Address value cannot be negative!\n");
+      exit(1);
+    }
     strcpy(val, &arg[6]);
     if(strcmp(arg,".data") == 0){
-      *addr = (Elf32_Addr) strtol(val, NULL, 0);
+      *addr = (Elf32_Addr) strtol(val, NULL, 0); //get value of address
     }
     else{
       fprintf(stderr, "Invalid section name\n");
@@ -109,8 +117,12 @@ void change_section_endian(Filedata *filedata){
   }
 }
 
+/*
+  Function : renumerotation
+  Renumbers the sections and corrects the indexes and values in the symbol table
+*/
 void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr, Elf32_Addr data_addr){
-  int i,j;
+  int i,j; //counters
   int sec_num = filedata->file_header.e_shnum ; //number of sections
   Elf32_Rel_Tab rel_tab = filedata->reloc_table; //relocation tables
   int rel_sec_num = rel_tab.rel_num; //number of relocation sections
@@ -120,15 +132,14 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   //copy file header
   memcpy(&(newfile->file_header), &(filedata->file_header), sizeof(Elf32_Ehdr));
   newfile->file_header.e_shnum = new_sec_num; //put new num of sections
-  //string table index should be changed but not sure how
+  
   //copy string table
   memcpy(&(newfile->string_table), &(filedata->string_table), sizeof(filedata->string_table));
   //copy string table length
   newfile->string_table_length = filedata->string_table_length;
-
+  //new section header string table index (the last section)
   newfile->file_header.e_shstrndx = newfile->file_header.e_shnum - 1;
   
-  //sec_off += newfile->file_header.e_ehsize ;
 
   //allocate new section header table
   newfile->section_headers = malloc(sizeof(Elf32_Shdr) * new_sec_num);
@@ -136,44 +147,50 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   //conversion table for symbol section index
   Elf32_Section new_stndx[sec_num];
 
-  Elf32_Shdr* new_sec_hdr = newfile->section_headers;
-  Elf32_Shdr* sec_hdr = filedata->section_headers;
+  Elf32_Shdr* new_sec_hdr = newfile->section_headers; //section headers of new file
+  Elf32_Shdr* sec_hdr = filedata->section_headers; //section headers of original file
+  //loop to copy values from old section header to new section header
   for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
     new_stndx[i] = 0 ;
-    if(sec_hdr[i].sh_type != SHT_REL){
+    if(sec_hdr[i].sh_type != SHT_REL){ //if section is not a relocation section
       new_stndx[i] = (Elf32_Section) j ;
-      new_sec_hdr[j].sh_addralign = sec_hdr[i].sh_addralign ;
-      new_sec_hdr[j].sh_entsize = sec_hdr[i].sh_entsize ;
-      new_sec_hdr[j].sh_flags = sec_hdr[i].sh_flags ;
-      new_sec_hdr[j].sh_info = sec_hdr[i].sh_info ;
-      if(sec_hdr[i].sh_type == SHT_SYMTAB){
-        new_sec_hdr[j].sh_link = j+1 ;
+      new_sec_hdr[j].sh_addralign = sec_hdr[i].sh_addralign ; //copy addralign
+      new_sec_hdr[j].sh_entsize = sec_hdr[i].sh_entsize ; //copy entsize
+      new_sec_hdr[j].sh_flags = sec_hdr[i].sh_flags ; //copy flags
+      new_sec_hdr[j].sh_info = sec_hdr[i].sh_info ; //copy info
+      if(sec_hdr[i].sh_type == SHT_SYMTAB){ //if section is symbol table (.symtab)
+        new_sec_hdr[j].sh_link = j+1 ; //link to the section after (.strtab)
       }
       else{
-        new_sec_hdr[j].sh_link = sec_hdr[i].sh_link ;
+        new_sec_hdr[j].sh_link = sec_hdr[i].sh_link ; //copy link
       }
-      new_sec_hdr[j].sh_size = sec_hdr[i].sh_size ;
-      new_sec_hdr[j].sh_type = sec_hdr[i].sh_type ;
-      new_sec_hdr[j].sh_name = sec_hdr[i].sh_name ;
+      new_sec_hdr[j].sh_size = sec_hdr[i].sh_size ; //copy size
+      new_sec_hdr[j].sh_type = sec_hdr[i].sh_type ; //copy type
+      new_sec_hdr[j].sh_name = sec_hdr[i].sh_name ; //copy name
 
       if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".text")==0){
-        new_sec_hdr[j].sh_addr = text_addr;
+        //if section is .text
+        new_sec_hdr[j].sh_addr = text_addr; //new addr is text_addr
       }
       else if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".data")==0){
-        new_sec_hdr[j].sh_addr = data_addr;
+        //if section is .data
+        new_sec_hdr[j].sh_addr = data_addr; //new addr is data_addr
       }
       else{
-        new_sec_hdr[j].sh_addr = sec_hdr[i].sh_addr;
+        new_sec_hdr[j].sh_addr = sec_hdr[i].sh_addr; //copy addr
       }
 
       if(sec_hdr[i].sh_type == SHT_NULL){
+        //if section is NULL section (section 0)
         new_sec_hdr[j].sh_offset = 0x0 ;
       }
       else if(strcmp(get_section_name(newfile, sec_hdr[i].sh_name),".text")==0){
-        new_sec_hdr[j].sh_offset = text_addr + sec_hdr[i].sh_offset ;
+        //if section is .text
+        new_sec_hdr[j].sh_offset = text_addr + sec_hdr[i].sh_offset ; //copy offset + text_addr
       }
       else{
-        new_sec_hdr[j].sh_offset = data_addr + sec_hdr[i].sh_offset ;
+        //all other sections starting from .data
+        new_sec_hdr[j].sh_offset = data_addr + sec_hdr[i].sh_offset ; //copy offset + data_addr
       }
       j++;
     }
@@ -191,9 +208,10 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
   new_sym_tab->sym_entries = malloc(sizeof(Elf32_Sym)*old_sym_tab->sym_tab_num); //allocate new symbol table
   memcpy(new_sym_tab->sym_entries, old_sym_tab->sym_entries, sizeof(Elf32_Sym)*old_sym_tab->sym_tab_num); //copy actual symbol table
 
-  Elf32_Section ndx ;
-  Elf32_Addr newval ;
-  Elf32_Sym * sym_ents = new_sym_tab->sym_entries ;
+  Elf32_Section ndx ; //st_ndx member of symtab
+  Elf32_Addr newval ; //st_value member of symtab
+  Elf32_Sym * sym_ents = new_sym_tab->sym_entries ; //new symbol table entries
+  //loop to change ndx and values of symbols in new symbol table
   for(i=0 ; i < new_sym_tab->sym_tab_num ; i++){
     ndx = new_stndx[change_endian_16(sym_ents[i].st_shndx)] ;
     sym_ents[i].st_shndx = (Elf32_Section) change_endian_16(ndx);
@@ -204,7 +222,8 @@ void renumerotation(Filedata *filedata, Filedata *newfile, Elf32_Addr text_addr,
 }
 
 /*
-  GENERATE NEW BINARY FILE
+  Function: write_file
+  Generates a new binary file containing the renumbered sections and corrected symbols
   */
 void write_file(Filedata *filedata, Filedata *newfile){
   
@@ -220,7 +239,7 @@ void write_file(Filedata *filedata, Filedata *newfile){
   
 
   //section content
-  char *content_buffer = malloc(0x1000);
+  char *content_buffer = malloc(0x1000); //buffer of 0x1000 bytes for copying contents of a section
   if(content_buffer == NULL){
     fprintf(stderr, "Failed to allocate memory for buffer.\n");
     exit(1);
@@ -244,7 +263,7 @@ void write_file(Filedata *filedata, Filedata *newfile){
 
   //copy sections to new file
   for(i=0, j=0 ; i < sec_num && j < new_sec_num ; i++){
-    if(sec_hdr[i].sh_type == SHT_SYMTAB){
+    if(sec_hdr[i].sh_type == SHT_SYMTAB){ //if section is symtab copy from new symbol table
       if(fseek(newfile->file, new_sec_hdr[j].sh_offset, SEEK_SET) != 0) {
         fprintf(stderr, "Failed to seek section (write).\n");
         exit(1);
@@ -256,7 +275,11 @@ void write_file(Filedata *filedata, Filedata *newfile){
       j++;
     }
     else if(sec_hdr[i].sh_type != SHT_REL && sec_hdr[i].sh_type != SHT_SYMTAB){
+      //for all other sections that are not relocation sections
+      //copy section contents from original binary file
       rewind(filedata->file);
+
+      //read the original file
       if(fseek(filedata->file, sec_hdr[i].sh_offset, SEEK_SET) != 0) {
         fprintf(stderr, "Failed to seek section (read).\n");
         exit(1);
@@ -265,7 +288,7 @@ void write_file(Filedata *filedata, Filedata *newfile){
         fprintf(stderr, "Failed to read section.\n");
         exit(1);
       }
-
+      //write to new file
       if(fseek(newfile->file, new_sec_hdr[j].sh_offset, SEEK_SET) != 0) {
         fprintf(stderr, "Failed to seek section (write).\n");
         exit(1);
@@ -342,24 +365,23 @@ int main(int argc, char ** argv){
       return EXIT_FAILURE;
   }
 
+  //generated binary file name is out.bin
   newfile->file = fopen("out.bin", "wb+");
   if (newfile->file == NULL){
       fprintf(stderr, "Failed to open output file.\n");
       return EXIT_FAILURE;
   }
 
-  //RELOCATION TO DO
-  //i'm still thinking for this part haha
-  //if you have any concrete ideas, please feel free to implement them here
-
-  //removing the relocation sections
+  //if file is a relocatable ELF file
   if(filedata->file_header.e_type == ET_REL){
-    renumerotation(filedata, newfile, text_addr, data_addr);
-    
+    //renumbering of sections and symbol correction
+    renumerotation(filedata, newfile, text_addr, data_addr); 
+    //generation of new binary file
     write_file(filedata, newfile);
-
+    //relocations done in new binary file
     implantation(filedata, newfile);
     
+    //prints out filedata of newfile
     process_file_header(newfile);
     process_section_headers(newfile);
     process_symbol_table(newfile);

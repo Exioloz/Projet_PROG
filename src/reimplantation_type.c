@@ -88,7 +88,7 @@ void replace_data(Filedata * filedata, uint32_t val_symbol, Elf32_Addr * addr_p,
         data_old[1]+=data_sym[1];
     }
 
-    if(data_old[2] == 0xff || dat_old[2] == 0){
+    if(data_old[2] == 0xff || data_old[2] == 0){
         data_old[2]=data_sym[2];
     }
     else{
