@@ -48,7 +48,6 @@ do
 
 	# fait une liste des sections (si la section est vide donc à une taille de 0, elle n'est pas testée)
 	cat .custom | sed -n '/Section Headers:/,/Key to Flags:/p' | tr -s " " | sed '1,3d' | head -n -1 | sed -e 's/\[[^][]*]//g' | awk '{print $1, $5}' | sed '/000000/d' | awk '{print $1}'> .temp_sec
-	#cat .temp_sec | awk '{print $1} | .temp_sec 
 
 	while IFS= read -r line; do
 		readelf -x $line $test 2> /dev/null | head -n -1 | tr -s ' ' > .original
