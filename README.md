@@ -109,7 +109,7 @@ Les options doivent être écrites séparément, ie : ` -h -S` . Un exemple est 
 
 ### Phase 2 
 L'objectif de la deuxiéme phase est de modifier le contenu du fichier au format ELF donné afin 
-d'effectuer l'implantation. Le programme prendr en paramètre les adresses auxquelles les sections 
+d'effectuer l'implantation. Le programme prend en paramètre les adresses auxquelles les sections 
 du programme (.text et .data) doivent être chargées. 
 
 Usage :
